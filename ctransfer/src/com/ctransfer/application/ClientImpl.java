@@ -7,6 +7,7 @@ import java.net.Socket;
 import java.net.SocketException;
 import java.util.Scanner;
 
+// TODO - Allow user to specify IP/Port to connect to (?)
 public class ClientImpl implements Client {
 	
 	private final String hostName;
@@ -32,9 +33,7 @@ public class ClientImpl implements Client {
 			// Connects to hostName:port
 			socket = new Socket(hostName, port);
 			
-			// TODO - print remote IP/port
-			// TODO - Separate console printing/input with SocketClient wrapper
-			System.out.println("Connection established.");
+			System.out.println("Connection established to: " + socket.getRemoteSocketAddress());
 
 			reader = new BufferedReader(new InputStreamReader(socket.getInputStream()));
 			writer = new PrintWriter(socket.getOutputStream(), true);
@@ -49,14 +48,11 @@ public class ClientImpl implements Client {
 					break;
 				}
 
+				// TODO - Separate console printing/input with SocketClient wrapper
 			    System.out.println("Server response: " + response);
 
-			    // TODO - Get input more .. elegantly
-			    System.out.print(">");
-			    String input = sc.nextLine();
-			    
+			    String input = getUserInput(sc);
 			    if (input != null) {
-			        System.out.println("Client send: " + input);
 			        writer.println(input);
 			    }
 				
@@ -104,6 +100,17 @@ public class ClientImpl implements Client {
 			e.printStackTrace();
 			
 		}
+		
+	}
+	
+	private String getUserInput(Scanner sc) {
+		
+		if (sc == null) {
+			return null;
+		}
+
+	    System.out.print(">");
+	    return sc.nextLine();
 		
 	}
 
