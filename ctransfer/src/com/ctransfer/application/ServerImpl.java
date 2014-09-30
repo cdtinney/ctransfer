@@ -5,20 +5,24 @@ import java.io.InputStreamReader;
 import java.io.PrintWriter;
 import java.net.ServerSocket;
 import java.net.Socket;
+import java.net.SocketException;
 import java.util.HashMap;
+import java.util.Set;
 
 public class ServerImpl implements Server {
 	
 	private ServerSocket serverSocket = null;
 	private Socket clientSocket = null;
 	
-	// Command map
+	// Command mapping
 	private HashMap<String, Command> commands;
 	
+	/*
+	 * Default constructor.
+	 */
 	public ServerImpl() {
 		
 		commands = new HashMap<String, Command>();
-		
 		addCommands();
 		
 	}
@@ -74,32 +78,70 @@ public class ServerImpl implements Server {
 	
 	public void listen() throws Exception {
 		
+		BufferedReader reader = null;
+		PrintWriter writer = null;
+		
 		try {
 
-			// TODO - Close resources
-			BufferedReader reader = new BufferedReader(new InputStreamReader(clientSocket.getInputStream()));
-			PrintWriter out = new PrintWriter(clientSocket.getOutputStream(), true);
+			reader = new BufferedReader(new InputStreamReader(clientSocket.getInputStream()));
+			writer = new PrintWriter(clientSocket.getOutputStream(), true);
 			
 		    // Initiate
-		    out.println("Initial response.");
-
-			String inputLine;
-		    while ((inputLine = reader.readLine()) != null) {
+		    writer.println("Initial response.");
+		    
+		    while (true) {
 		    	
-		    	System.out.println("Server received: " + inputLine);
-		        out.println("you sent me: " + inputLine);
+		    	String clientRequest = reader.readLine();
+		    	if (clientRequest == null) {
+		    		break;
+		    	}
 		    	
-		    	// TODO - Process client request
-		    	// TODO - Send proper response
-		        
-		        // TODO - Break loop when appropriate
-		        
+		    	String response = processRequest(clientRequest);
+		    	writer.println(response);
+		    	
 		    }
+		    
+		} catch (SocketException e) {
+			System.out.println("SocketException: the connection has most likely been closed.");
 			
 		} catch (Exception e) {
 			e.printStackTrace();
+
+		// Clean up resources
+		} finally {
+			
+			System.out.println("Cleaning up resources.");
+			
+			if (reader != null) {
+				reader.close();
+			}
+			
+			if (writer != null) {
+				writer.close();
+			}
+			
+			stop();
 			
 		}
+		
+	}
+	
+	private String processRequest(String request) {
+		
+		// Trim extra white space
+		request = request.trim();
+		
+		if (!commands.containsKey(request))  {
+			return "Unrecognized command";
+		}
+		
+		Command command = commands.get(request);
+		
+		// Run the command
+		command.run();
+		
+		// Return the computed response
+		return command.getResponse();
 		
 	}
 	
@@ -120,6 +162,35 @@ public class ServerImpl implements Server {
 			@Override
 			public String getResponse() {
 				return "bunch of files";
+			}
+			
+		});
+		
+		commands.put("help", new Command() {
+
+			@Override
+			public String getCommandString() {
+				return "help";
+			}
+
+			@Override
+			public String getResponse() {
+				
+				Set<String> commandSet = commands.keySet();
+				StringBuilder sb = new StringBuilder();
+				
+				for (String s : commandSet) {
+					sb.append(s);
+					sb.append("\n");
+				}
+				
+				return sb.toString();
+				
+			}
+
+			@Override
+			public void run() {
+				System.out.println("running help");
 			}
 			
 		});

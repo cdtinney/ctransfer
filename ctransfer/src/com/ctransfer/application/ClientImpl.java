@@ -4,6 +4,7 @@ import java.io.BufferedReader;
 import java.io.InputStreamReader;
 import java.io.PrintWriter;
 import java.net.Socket;
+import java.net.SocketException;
 import java.util.Scanner;
 
 public class ClientImpl implements Client {
@@ -14,40 +15,66 @@ public class ClientImpl implements Client {
 	private Socket socket = null;
 
 	@Override
-	public void start() {
+	public void start() throws Exception {
+		
+		BufferedReader reader = null;
+		PrintWriter writer = null;
+		
+		Scanner sc = new Scanner(System.in);
 
 		try {
 			
-			Socket client = new Socket ("localhost", 9000);
+			socket = new Socket("localhost", 9000);
 			
 			// TODO - print remote IP/port
 			System.out.println("Connection established.");
 
-			// TODO - Clean up resources
-			BufferedReader reader = new BufferedReader(new InputStreamReader(client.getInputStream()));
-			PrintWriter out = new PrintWriter(client.getOutputStream(), true);
-
-			Scanner sc = new Scanner(System.in);
-			String fromServer = "";
-			while ((fromServer = reader.readLine()) != null) {
+			reader = new BufferedReader(new InputStreamReader(socket.getInputStream()));
+			writer = new PrintWriter(socket.getOutputStream(), true);
+			
+			String response = null;
+			while (true) {
 				
-			    System.out.println("Server response: " + fromServer);
-			    
-			    // TODO - Break loop when appropriate
-			    
+				response = reader.readLine();
+				if (response == null) {
+					break;
+				}
+
+			    System.out.println("Server response: " + response);
+
 			    // TODO - Get input more .. elegantly
 			    System.out.print(">");
-			    String fromUser = sc.nextLine();
+			    String input = sc.nextLine();
 			    
-			    if (fromUser != null) {
-			        System.out.println("Client send: " + fromUser);
-			        out.println(fromUser);
+			    if (input != null) {
+			        System.out.println("Client send: " + input);
+			        writer.println(input);
 			    }
-			    
+				
+				
 			}
+			
+		} catch (SocketException e) {
+			System.out.println("SocketException: the connection has most likely been closed.");
 			
 		} catch (Exception e) {
 			e.printStackTrace();
+			
+		} finally {
+			
+			System.out.println("Cleaning up resources.");
+			
+			if (reader != null) {
+				reader.close();
+			}
+			
+			if (writer != null) {
+				writer.close();
+			}
+			
+			if (sc != null) {
+				sc.close();
+			}
 			
 		}
 		
