@@ -29,7 +29,7 @@ public class Application {
 				server.start();
 				
 			} else if (selection == 2) {
-				Client client = new ClientImpl();
+				Client client = new ClientImpl("localhost", 9000);
 				client.start();
 				
 			}

@@ -9,10 +9,15 @@ import java.util.Scanner;
 
 public class ClientImpl implements Client {
 	
-	// TODO - Constructor with host name, port
-	// TODO - Separate console printing/input with SocketClient wrapper
+	private final String hostName;
+	private final Integer port;
 	
 	private Socket socket = null;
+	
+	public ClientImpl(String hostName, Integer port) {
+		this.hostName = hostName;
+		this.port = port;		
+	}
 
 	@Override
 	public void start() throws Exception {
@@ -20,17 +25,21 @@ public class ClientImpl implements Client {
 		BufferedReader reader = null;
 		PrintWriter writer = null;
 		
-		Scanner sc = new Scanner(System.in);
+		Scanner sc = null;
 
 		try {
 			
-			socket = new Socket("localhost", 9000);
+			// Connects to hostName:port
+			socket = new Socket(hostName, port);
 			
 			// TODO - print remote IP/port
+			// TODO - Separate console printing/input with SocketClient wrapper
 			System.out.println("Connection established.");
 
 			reader = new BufferedReader(new InputStreamReader(socket.getInputStream()));
 			writer = new PrintWriter(socket.getOutputStream(), true);
+			
+			sc = new Scanner(System.in);
 			
 			String response = null;
 			while (true) {
@@ -86,21 +95,15 @@ public class ClientImpl implements Client {
 		try {
 			
 			if (socket != null) {
-				System.out.println("Closing the socket...");
 				socket.close();
-				System.out.println("..successfully closed.");
 			}
+			
+			System.out.println("Socket closed.");
 		
 		} catch (Exception e) {
 			e.printStackTrace();
 			
 		}
-		
-	}
-
-	@Override
-	public void send(String s) {
-		// TODO Auto-generated method stub
 		
 	}
 

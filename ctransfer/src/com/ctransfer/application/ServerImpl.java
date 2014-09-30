@@ -1,25 +1,28 @@
 package com.ctransfer.application;
 
 import java.io.BufferedReader;
+import java.io.File;
 import java.io.InputStreamReader;
 import java.io.PrintWriter;
 import java.net.ServerSocket;
 import java.net.Socket;
 import java.net.SocketException;
 import java.util.HashMap;
+import java.util.List;
 import java.util.Set;
 
+import com.ctransfer.utils.FileUtils;
+
+// TODO - Comments
 public class ServerImpl implements Server {
 	
 	private ServerSocket serverSocket = null;
 	private Socket clientSocket = null;
 	
-	// Command mapping
 	private HashMap<String, Command> commands;
 	
-	/*
-	 * Default constructor.
-	 */
+	private String pwd = "C:\\";
+	
 	public ServerImpl() {
 		
 		commands = new HashMap<String, Command>();
@@ -58,16 +61,14 @@ public class ServerImpl implements Server {
 		try {
 			
 			if (clientSocket != null) {
-				System.out.println("Closing the client socket...");
 				clientSocket.close();
-				System.out.println("..successfully closed.");
 			}
 		
 			if (serverSocket != null) {
-				System.out.println("Closing the server socket...");
 				serverSocket.close();
-				System.out.println("..successfully closed.");
 			}
+			
+			System.out.println("Socket closed.");
 		
 		} catch (Exception e) {
 			e.printStackTrace();
@@ -86,7 +87,6 @@ public class ServerImpl implements Server {
 			reader = new BufferedReader(new InputStreamReader(clientSocket.getInputStream()));
 			writer = new PrintWriter(clientSocket.getOutputStream(), true);
 			
-		    // Initiate
 		    writer.println("Initial response.");
 		    
 		    while (true) {
@@ -161,7 +161,20 @@ public class ServerImpl implements Server {
 
 			@Override
 			public String getResponse() {
-				return "bunch of files";
+				
+				List<File> files = FileUtils.listFiles(pwd, null);
+				
+				StringBuilder sb = new StringBuilder();
+				for (File f : files) {
+					
+					// TODO - Display folders differently
+					sb.append(f.getName());
+					sb.append("\t");
+					
+				}
+				
+				return sb.toString();
+				
 			}
 			
 		});
@@ -181,7 +194,7 @@ public class ServerImpl implements Server {
 				
 				for (String s : commandSet) {
 					sb.append(s);
-					sb.append("\n");
+					sb.append("\t");
 				}
 				
 				return sb.toString();
