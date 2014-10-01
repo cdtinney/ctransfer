@@ -13,8 +13,6 @@ import java.util.Arrays;
 import java.util.HashMap;
 import java.util.List;
 
-import javax.swing.filechooser.FileSystemView;
-
 import com.ctransfer.enums.ResponseType;
 import com.ctransfer.utils.ArrayUtils;
 import com.ctransfer.utils.FileUtils;
