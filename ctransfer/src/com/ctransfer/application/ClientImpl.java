@@ -1,6 +1,8 @@
 package com.ctransfer.application;
 
 import java.io.BufferedReader;
+import java.io.File;
+import java.io.FileOutputStream;
 import java.io.InputStreamReader;
 import java.io.PrintWriter;
 import java.net.Socket;
@@ -14,6 +16,8 @@ public class ClientImpl implements Client {
 	private final Integer port;
 	
 	private Socket socket = null;
+	
+	private String pwd = "C:\\client\\";
 	
 	public ClientImpl(String hostName, Integer port) {
 		this.hostName = hostName;
@@ -61,6 +65,10 @@ public class ClientImpl implements Client {
 				
 				if (response.equals(ResponseType.DELETE_FILE.toString())) {
 					System.out.println(reader.readLine());
+				}
+				
+				if (response.equals(ResponseType.FILE_TRANSFER.toString())) {
+					processFileTransfer(reader);
 				}
 				
 			}
@@ -128,6 +136,46 @@ public class ClientImpl implements Client {
 		
 		System.out.println("\nAll contents listed.");
 		
+	}
+	
+	private void processFileTransfer(BufferedReader reader) throws Exception {
+		
+		// TODO - Use a constant str
+		String fileName = reader.readLine();
+		if (fileName.equals("File does not exist!")) {
+			System.out.println("File not found!");
+			return;
+		}
+		
+		Integer fileSize = Integer.parseInt(reader.readLine());
+		if (fileSize <= 0) {
+			System.out.println("File size <= 0.");
+			return;
+		}
+		
+		byte[] data = new byte[fileSize];
+		int numRead = socket.getInputStream().read(data, 0, fileSize);
+		if (numRead == -1) {
+			System.out.println("End of stream reached.");
+			return;
+		}
+		
+		// TODO - Handle errors here
+		File folder = new File(pwd);
+		if (!folder.exists() && !folder.mkdir()) {
+			System.out.println("Failed to create directory: " + pwd);
+			return;
+		}
+		
+		File file = new File(pwd + fileName);
+		file.createNewFile();
+		
+        FileOutputStream fileOutputStream = new FileOutputStream(file);
+        fileOutputStream.write(data);
+        fileOutputStream.close();		
+        
+        System.out.println("File successfully transferred.");
+        
 	}
 	
 	private String getUserInput(Scanner sc) {

@@ -2,6 +2,7 @@ package com.ctransfer.application;
 
 import java.io.BufferedReader;
 import java.io.File;
+import java.io.IOException;
 import java.io.InputStreamReader;
 import java.io.PrintWriter;
 import java.net.ServerSocket;
@@ -9,9 +10,9 @@ import java.net.Socket;
 import java.net.SocketException;
 import java.util.HashMap;
 import java.util.List;
-import java.util.Set;
 
 import com.ctransfer.utils.FileUtils;
+import com.google.common.io.Files;
 
 // TODO - Comments
 public class ServerImpl implements Server {
@@ -142,9 +143,13 @@ public class ServerImpl implements Server {
 		}
 		
 		Command command = commands.get(request);
-		writer.println(command.getResponseType());
+		ResponseType responseType = command.getResponseType();
 		
-		if (command.getResponseType() == ResponseType.FILE_LIST) {
+		// Send the client the response type prior to the actual response
+		writer.println(responseType);
+		
+		// TODO - Refactor (modify Command interface)
+		if (responseType == ResponseType.FILE_LIST) {
 			
 			// Send the client the PWD.
 			writer.println(pwd);
@@ -158,12 +163,40 @@ public class ServerImpl implements Server {
 				writer.println(s);
 			}
 			
-		} else if (command.getResponseType() == ResponseType.DELETE_FILE) {
+		} else if (responseType == ResponseType.DELETE_FILE) {
 
 			String fileName = parts[1];
 			Boolean result = FileUtils.deleteFile(pwd, fileName);
 			
 			writer.println("Successfully deleted? " + result);
+			
+			
+		} else if (responseType == ResponseType.FILE_TRANSFER) {
+		
+			String fileName = parts[1];
+			
+			File file = new File(pwd + fileName);
+			if (!file.exists()) {
+				writer.println("File does not exist!");
+				// TODO - How to cancel transfer on client at this point
+			}
+			
+			// Send file name
+			writer.println(fileName);
+			
+			// Send file size
+			writer.println(file.length());
+			
+			try {
+
+				// Convert the file to a byte array, and send to the client
+				byte[] data = Files.toByteArray(file);
+				clientSocket.getOutputStream().write(data);				
+				
+			} catch (IOException e) {
+				e.printStackTrace();
+				
+			}
 			
 		} else {
 			writer.println(command.getResponse());
@@ -243,6 +276,38 @@ public class ServerImpl implements Server {
 			@Override
 			public ResponseType getResponseType() {
 				return ResponseType.DELETE_FILE;
+			}
+
+			@Override
+			public byte[] getResponseBytes() {
+				
+				String response = getResponse();
+				return response.getBytes();
+				
+			}
+			
+		});
+		
+		commands.put("get", new Command() {
+
+			@Override
+			public String getCommandString() {
+				return "get";
+			}
+
+			@Override
+			public String getResponse() {
+				return null;
+			}
+
+			@Override
+			public void run() {
+				System.out.println("running get");
+			}
+
+			@Override
+			public ResponseType getResponseType() {
+				return ResponseType.FILE_TRANSFER;
 			}
 
 			@Override
