@@ -8,6 +8,8 @@ import java.io.PrintWriter;
 import java.net.ServerSocket;
 import java.net.Socket;
 import java.net.SocketException;
+import java.util.ArrayList;
+import java.util.Arrays;
 import java.util.HashMap;
 import java.util.List;
 
@@ -21,7 +23,8 @@ public class ServerImpl implements Server {
 	private Socket clientSocket = null;
 	
 	private HashMap<String, Command> commands;
-	
+
+	// TODO - Change depending on system
 	private String pwd = "C:\\";
 	
 	public ServerImpl() {
@@ -129,79 +132,26 @@ public class ServerImpl implements Server {
 	
 	private void processRequest(String request, PrintWriter writer) {
 		
-		// Trim leading/trailing white space and set to lower case
-		// TODO - This will set args to lower case
-		request = request.trim().toLowerCase();
-		
+		// Split by whitespace.
 		String[] parts = request.split(" ");
-		request = parts[0];
 		
-		// No command found for the client request
-		if (!commands.containsKey(request)) {
-			writer.println("Unrecognized command: " + request);
+		// Set the command to lower case, since that is how they're mapped
+		String commandStr = parts[0].toLowerCase();
+		
+		Command command = commands.get(commandStr);
+		if (command == null) {
+			writer.println("Unrecognized command: " + commandStr);
 			return;
 		}
 		
-		Command command = commands.get(request);
-		ResponseType responseType = command.getResponseType();
-		
 		// Send the client the response type prior to the actual response
-		writer.println(responseType);
-		
-		// TODO - Refactor (modify Command interface)
-		if (responseType == ResponseType.FILE_LIST) {
-			
-			// Send the client the PWD.
-			writer.println(pwd);
-			
-			String lines[] = command.getResponse().split("\\n");
-			
-			// Send the client the number of strings we are about to send
-			writer.println(lines.length);
-			
-			for (String s : lines) {
-				writer.println(s);
-			}
-			
-		} else if (responseType == ResponseType.DELETE_FILE) {
+		writer.println(command.getResponseType());
 
-			String fileName = parts[1];
-			Boolean result = FileUtils.deleteFile(pwd, fileName);
-			
-			writer.println("Successfully deleted? " + result);
-			
-			
-		} else if (responseType == ResponseType.FILE_TRANSFER) {
+		// Parse out the arguments
+		String[] args = Arrays.copyOfRange(parts, 1, parts.length);
 		
-			String fileName = parts[1];
-			
-			File file = new File(pwd + fileName);
-			if (!file.exists()) {
-				writer.println("File does not exist!");
-				// TODO - How to cancel transfer on client at this point
-			}
-			
-			// Send file name
-			writer.println(fileName);
-			
-			// Send file size
-			writer.println(file.length());
-			
-			try {
-
-				// Convert the file to a byte array, and send to the client
-				byte[] data = Files.toByteArray(file);
-				clientSocket.getOutputStream().write(data);				
-				
-			} catch (IOException e) {
-				e.printStackTrace();
-				
-			}
-			
-		} else {
-			writer.println(command.getResponse());
-			
-		}
+		// Run the command, passing the socket so it can send directly to the client
+		command.run(writer, args);
 		
 	}
 	
@@ -210,30 +160,48 @@ public class ServerImpl implements Server {
 		commands.put("ls", new Command() {
 
 			@Override
-			public String getResponse() {
+			public ResponseType getResponseType() {
+				return ResponseType.FILE_LIST;
+			}
+
+			@Override
+			public void run(PrintWriter writer, String[] args) {
+
+				// Send the present working directory (pwd)
+				writer.println(pwd);
+				
+				List<String> fileNames = getFileNames();
+				
+				// Send the number of strings we are about to send
+				writer.println(fileNames.size());
+				
+				// Send each line/file name
+				for (String s : fileNames) {
+					writer.println(s);
+				}
+				
+			}
+			
+			private List<String> getFileNames() {
 				
 				List<File> files = FileUtils.listFiles(pwd, null, true);
+				List<String> fileNames = new ArrayList<String>();
 				
-				StringBuilder sb = new StringBuilder();
 				for (File f : files) {
 					
+					StringBuilder sb = new StringBuilder();
 					sb.append(f.getName());
 					
 					if (f.isDirectory()) {
 						sb.append("\\");
 					}
 					
-					sb.append("\n");
+					fileNames.add(sb.toString());					
 					
 				}
 				
-				return sb.toString();
+				return fileNames;
 				
-			}
-
-			@Override
-			public ResponseType getResponseType() {
-				return ResponseType.FILE_LIST;
 			}
 			
 		});
@@ -241,27 +209,63 @@ public class ServerImpl implements Server {
 		commands.put("delete", new Command() {
 
 			@Override
-			public String getResponse() {
-				return null;
+			public ResponseType getResponseType() {
+				return ResponseType.DELETE_FILE;
 			}
 
 			@Override
-			public ResponseType getResponseType() {
-				return ResponseType.DELETE_FILE;
+			public void run(PrintWriter writer, String[] args) {
+
+				String fileName = args[0];
+				Boolean result = FileUtils.deleteFile(pwd, fileName);
+				
+				writer.println(result ? ("Successfully deleted: " + fileName) : ("File was not successfully deleted: " + fileName));
+				
 			}
 			
 		});
 		
 		commands.put("get", new Command() {
-			
-			@Override
-			public String getResponse() {
-				return null;
-			}
 
 			@Override
 			public ResponseType getResponseType() {
 				return ResponseType.FILE_TRANSFER;
+			}
+
+			@Override
+			public void run(PrintWriter writer, String[] args) {
+				
+				try {
+
+					// TODO - handle this
+					if (args.length < 1) {
+						writer.println("Error! No file name specified.");
+						return;
+					}
+					
+					String fileName = args[0];
+					
+					File file = new File(pwd + fileName);
+					if (!file.exists()) {
+						writer.println("File does not exist!");
+						// TODO - How to cancel transfer on client at this point
+					}
+					
+					// Send file name
+					writer.println(fileName);
+					
+					// Send file size
+					writer.println(file.length());
+
+					// Convert the file to a byte array, and send to the client
+					byte[] data = Files.toByteArray(file);
+					clientSocket.getOutputStream().write(data);				
+					
+				} catch (IOException e) {
+					e.printStackTrace();
+					
+				}
+				
 			}
 			
 		});

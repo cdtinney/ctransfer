@@ -1,8 +1,11 @@
 package com.ctransfer.application;
 
+import java.io.PrintWriter;
+
 public interface Command {
-	
-	public String getResponse();
+
 	public ResponseType getResponseType();
+	public void run(PrintWriter writer, String[] args);
+	
 
 }

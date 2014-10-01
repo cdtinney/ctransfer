@@ -17,6 +17,7 @@ public class ClientImpl implements Client {
 	
 	private Socket socket = null;
 	
+	// TODO - Change depending on system
 	private String pwd = "C:\\client\\";
 	
 	public ClientImpl(String hostName, Integer port) {
@@ -59,15 +60,14 @@ public class ClientImpl implements Client {
 
 			    System.out.println("\nReceived response: " + response + "\n");
 				
+			    // TODO - Refactor
 				if (response.equals(ResponseType.FILE_LIST.toString())) {
 					processFileList(reader);
-				} 
-				
-				if (response.equals(ResponseType.DELETE_FILE.toString())) {
-					System.out.println(reader.readLine());
-				}
-				
-				if (response.equals(ResponseType.FILE_TRANSFER.toString())) {
+					
+				} else if (response.equals(ResponseType.DELETE_FILE.toString())) {
+					processDeleteFile(reader);
+					
+				} else if (response.equals(ResponseType.FILE_TRANSFER.toString())) {
 					processFileTransfer(reader);
 				}
 				
@@ -117,6 +117,12 @@ public class ClientImpl implements Client {
 		
 	}
 	
+	private void processDeleteFile(BufferedReader reader) throws Exception { 
+		
+		System.out.println(reader.readLine());
+		
+	}
+	
 	private void processFileList(BufferedReader reader) throws Exception {
 		
 		String pwd = reader.readLine();
@@ -140,16 +146,16 @@ public class ClientImpl implements Client {
 	
 	private void processFileTransfer(BufferedReader reader) throws Exception {
 		
-		// TODO - Use a constant str
+		// TODO - Use constant strs/error codes
 		String fileName = reader.readLine();
-		if (fileName.equals("File does not exist!")) {
-			System.out.println("File not found!");
+		if (fileName.equals("File does not exist!") || fileName.equals("Error! No file name specified.")) {
+			System.out.println("File not found or no file name specified.");
 			return;
 		}
 		
 		Integer fileSize = Integer.parseInt(reader.readLine());
-		if (fileSize <= 0) {
-			System.out.println("File size <= 0.");
+		if (fileSize < 0) {
+			System.out.println("File size < 0.");
 			return;
 		}
 		
