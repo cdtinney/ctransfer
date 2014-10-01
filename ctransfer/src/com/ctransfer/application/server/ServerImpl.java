@@ -1,4 +1,4 @@
-package com.ctransfer.application;
+package com.ctransfer.application.server;
 
 import java.io.BufferedReader;
 import java.io.File;
@@ -13,11 +13,14 @@ import java.util.Arrays;
 import java.util.HashMap;
 import java.util.List;
 
+import com.ctransfer.application.ResponseType;
 import com.ctransfer.utils.FileUtils;
 import com.google.common.io.Files;
 
 // TODO - Comments
 public class ServerImpl implements Server {
+	
+	private final Integer port;
 	
 	private ServerSocket serverSocket = null;
 	private Socket clientSocket = null;
@@ -27,7 +30,9 @@ public class ServerImpl implements Server {
 	// TODO - Change depending on system
 	private String pwd = "C:\\";
 	
-	public ServerImpl() {
+	public ServerImpl(Integer port) {
+		
+		this.port = port;
 		
 		commands = new HashMap<String, Command>();
 		addCommands();
@@ -40,7 +45,7 @@ public class ServerImpl implements Server {
 		try {
 			
 			// Bind to port 9000. No IP specified - defaults to 0.0.0.0 -> 127.0.0.1
-			serverSocket = new ServerSocket(9000);
+			serverSocket = new ServerSocket(this.port);
 			
 			System.out.println("Waiting for a connection request...");
 			System.out.println("[" + serverSocket.getInetAddress() +  ":" + serverSocket.getLocalPort() + "]");

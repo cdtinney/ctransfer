@@ -2,6 +2,11 @@ package com.ctransfer.application;
 
 import java.util.Scanner;
 
+import com.ctransfer.application.client.Client;
+import com.ctransfer.application.client.ClientImpl;
+import com.ctransfer.application.server.Server;
+import com.ctransfer.application.server.ServerImpl;
+
 public class Application {
 	
 	public static void print(String s) {
@@ -17,15 +22,12 @@ public class Application {
 		print("\t2. Client");
 		print("--------------------------------");
 		
-		Scanner sc = null;
-		
-		try {
-			
-			sc = new Scanner(System.in);
+		// try-with automatically closes resources
+		try (Scanner sc = new Scanner(System.in)) {
 		
 			Integer selection = sc.nextInt();
 			if (selection == 1) {
-				Server server = new ServerImpl();
+				Server server = new ServerImpl(9000);
 				server.start();
 				
 			} else if (selection == 2) {
@@ -37,13 +39,7 @@ public class Application {
 		} catch (Exception e) {
 			e.printStackTrace();
 		
-		} finally {
-			
-			if (sc != null) {
-				sc.close();
-			}
-			
-		}
+		} 
 		
 	}
 

@@ -1,4 +1,4 @@
-package com.ctransfer.application;
+package com.ctransfer.application.client;
 
 public interface Client {
 
