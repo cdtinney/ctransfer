@@ -13,14 +13,10 @@ import java.util.Arrays;
 import java.util.HashMap;
 import java.util.List;
 
-<<<<<<< HEAD:ctransfer/src/com/ctransfer/application/server/ServerImpl.java
-import com.ctransfer.application.ResponseType;
-import com.ctransfer.utils.*;
-=======
 import com.ctransfer.enums.ResponseType;
 import com.ctransfer.utils.ArrayUtils;
 import com.ctransfer.utils.FileUtils;
->>>>>>> 3e906c0fbe66fa3ed111e1e7def5a71afa176ddf:ctransfer/src/com/ctransfer/server/ServerImpl.java
+import com.ctransfer.utils.OSUtils;
 import com.google.common.io.Files;
 
 // TODO - Comments
@@ -33,17 +29,15 @@ public class ServerImpl implements Server {
 	
 	private HashMap<String, Command> commands;
 
-	// TODO - Change depending on system
 	private String pwd = System.getProperty("user.dir");
 	
 	public ServerImpl(Integer port) {
-		
-		setPwdByOS();
-
 		this.port = port;
 		
 		commands = new HashMap<String, Command>();
 		addCommands();
+		
+		setPwdByOS();
 		
 	}
 
@@ -287,10 +281,16 @@ public class ServerImpl implements Server {
 		
 	}
 	
-	public void setPwdByOS() {
-		if(OSValidator.isWindows())
+	private void setPwdByOS() {
+		
+		if (OSUtils.isWindows()) {
 			pwd += "\\server\\";
-		else if(OSValidator.isMac() || OSValidator.isUnix())
+			
+		} else if (OSUtils.isMac() || OSUtils.isUnix()) {
 			pwd += "/server/";
+			
+		}
+	
 	}
+	
 }

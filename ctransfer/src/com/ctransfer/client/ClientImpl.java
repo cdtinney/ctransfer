@@ -10,18 +10,13 @@ import java.net.SocketException;
 import java.util.HashMap;
 import java.util.Scanner;
 
-<<<<<<< HEAD:ctransfer/src/com/ctransfer/application/client/ClientImpl.java
-import com.ctransfer.application.ResponseType;
-import com.ctransfer.utils.OSValidator;
-=======
 import com.ctransfer.enums.ResponseType;
 import com.ctransfer.utils.EnumUtils;
->>>>>>> 3e906c0fbe66fa3ed111e1e7def5a71afa176ddf:ctransfer/src/com/ctransfer/client/ClientImpl.java
+import com.ctransfer.utils.OSUtils;
 
 // TODO - Allow user to specify IP/Port to connect to (?)
 public class ClientImpl implements Client {
 
-	// TODO - Change depending on system
 	private String pwd = System.getProperty("user.dir");
 	
 	private final String hostName;
@@ -32,14 +27,13 @@ public class ClientImpl implements Client {
 	private HashMap<ResponseType, ResponseHandler> responseHandlers;
 	
 	public ClientImpl(String hostName, Integer port) {
-		
-		setPwdByOS();
-		
 		this.hostName = hostName;
 		this.port = port;		
 		
 		responseHandlers = new HashMap<ResponseType, ResponseHandler>();
 		addResponseHandlers();
+		
+		setPwdByOS();
 		
 	}
 
@@ -246,11 +240,16 @@ public class ClientImpl implements Client {
 		
 	}
 	
-	public void setPwdByOS() {
-		if(OSValidator.isWindows())
+	private void setPwdByOS() {
+		
+		if (OSUtils.isWindows()) {
 			pwd += "\\client\\";
-		else if(OSValidator.isMac() || OSValidator.isUnix())
+			
+		} else if (OSUtils.isMac() || OSUtils.isUnix()) {
 			pwd += "/client/";
+			
+		}
+		
 	}
 
 }
