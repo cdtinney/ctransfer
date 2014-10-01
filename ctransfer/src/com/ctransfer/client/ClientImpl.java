@@ -11,6 +11,7 @@ import java.util.HashMap;
 import java.util.Scanner;
 
 import com.ctransfer.enums.ResponseType;
+import com.ctransfer.utils.EnumUtils;
 
 // TODO - Allow user to specify IP/Port to connect to (?)
 public class ClientImpl implements Client {
@@ -69,7 +70,17 @@ public class ClientImpl implements Client {
 
 			    System.out.println("\nReceived response: " + response + "\n");
 			    
-			    ResponseType responseType = ResponseType.valueOf(response);
+			    if (response.contains(ResponseType.ERROR.toString())) {
+			    	System.out.println(response);
+			    	continue;
+			    }
+			    
+			    ResponseType responseType = EnumUtils.lookup(ResponseType.class, response);
+			    if (responseType == null) {
+			    	System.out.println("Unrecognized ResponseType: " + response);
+			    	continue;
+			    }
+			    
 			    ResponseHandler responseHandler = responseHandlers.get(responseType);
 			    if (responseHandler == null) {
 			    	System.out.println("No response handler found for: " + responseType);
