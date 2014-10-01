@@ -5,8 +5,10 @@ import java.io.File;
 import java.io.FileOutputStream;
 import java.io.InputStreamReader;
 import java.io.PrintWriter;
+import java.net.InetSocketAddress;
 import java.net.Socket;
 import java.net.SocketException;
+import java.net.SocketTimeoutException;
 import java.util.HashMap;
 import java.util.Scanner;
 
@@ -20,8 +22,8 @@ public class ClientImpl implements Client {
 
 	private String pwd;
 	
-	private final String hostName;
-	private final Integer port;
+	private String hostName;
+	private Integer port;
 	
 	private Socket socket = null;
 	
@@ -30,6 +32,8 @@ public class ClientImpl implements Client {
 	public ClientImpl(String hostName, Integer port) {
 		this.hostName = hostName;
 		this.port = port;		
+		
+		socket = new Socket();
 		
 		responseHandlers = new HashMap<ResponseType, ResponseHandler>();
 		addResponseHandlers();
@@ -44,19 +48,19 @@ public class ClientImpl implements Client {
 		BufferedReader reader = null;
 		PrintWriter writer = null;
 		
-		Scanner sc = null;
-
+		Scanner sc = new Scanner(System.in); 
+		
+		getHostnameAndPort(sc);
+				
 		try {
 			
-			// Connects to hostName:port
-			socket = new Socket(hostName, port);
+			// Connects to hostName:port, with a timeout of 1s
+			socket.connect(new InetSocketAddress(hostName, port), 1000);
 			
 			System.out.println("Connection established to: " + socket.getRemoteSocketAddress());
 
 			reader = new BufferedReader(new InputStreamReader(socket.getInputStream()));
 			writer = new PrintWriter(socket.getOutputStream(), true);
-			
-			sc = new Scanner(System.in);
 			
 			String response = null;
 			while (true) {
@@ -94,8 +98,11 @@ public class ClientImpl implements Client {
 				
 			}
 			
+		} catch (SocketTimeoutException e) {
+			System.out.println("SocketTimeoutException: Connection attempt to [" + (hostName) + ":" + port + "] has timed out.");
+			
 		} catch (SocketException e) {
-			System.out.println("SocketException: the connection has most likely been closed.");
+			System.out.println("SocketException: The connection has most likely been closed.");
 			
 		} catch (Exception e) {
 			e.printStackTrace();
@@ -238,6 +245,23 @@ public class ClientImpl implements Client {
 
 	    System.out.print("\nctransfer > ");
 	    return sc.nextLine();
+		
+	}
+	
+	private void getHostnameAndPort(Scanner sc) {
+
+		System.out.print("\nPlease enter a hostname: ");
+		String hostName = sc.nextLine();
+		
+		System.out.print("Please enter a port: ");
+		String input = sc.nextLine();
+		if (!input.isEmpty()) {
+			this.port = Integer.parseInt(input);
+		}
+		
+		if (hostName != null && !hostName.trim().isEmpty()) {
+			this.hostName = hostName;
+		}
 		
 	}
 	
