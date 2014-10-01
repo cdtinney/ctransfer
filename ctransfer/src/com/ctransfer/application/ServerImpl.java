@@ -128,9 +128,12 @@ public class ServerImpl implements Server {
 	
 	private void processRequest(String request, PrintWriter writer) {
 		
-		
 		// Trim leading/trailing white space and set to lower case
+		// TODO - This will set args to lower case
 		request = request.trim().toLowerCase();
+		
+		String[] parts = request.split(" ");
+		request = parts[0];
 		
 		// No command found for the client request
 		if (!commands.containsKey(request)) {
@@ -155,13 +158,17 @@ public class ServerImpl implements Server {
 				writer.println(s);
 			}
 			
+		} else if (command.getResponseType() == ResponseType.DELETE_FILE) {
+
+			String fileName = parts[1];
+			Boolean result = FileUtils.deleteFile(pwd, fileName);
+			
+			writer.println("Successfully deleted? " + result);
+			
 		} else {
 			writer.println(command.getResponse());
 			
 		}
-		
-		// Run the command (TODO - Is this necessary?)
-		// command.run();
 		
 	}
 	
@@ -216,36 +223,26 @@ public class ServerImpl implements Server {
 			
 		});
 		
-		commands.put("help", new Command() {
+		commands.put("delete", new Command() {
 
 			@Override
 			public String getCommandString() {
-				return "help";
+				return "delete";
 			}
 
 			@Override
 			public String getResponse() {
-				
-				Set<String> commandSet = commands.keySet();
-				StringBuilder sb = new StringBuilder();
-				
-				for (String s : commandSet) {
-					sb.append(s);
-					sb.append("\t");
-				}
-				
-				return sb.toString();
-				
+				return null;
 			}
 
 			@Override
 			public void run() {
-				System.out.println("running help");
+				System.out.println("running delete");
 			}
 
 			@Override
 			public ResponseType getResponseType() {
-				return null;
+				return ResponseType.DELETE_FILE;
 			}
 
 			@Override

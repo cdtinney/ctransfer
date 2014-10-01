@@ -59,6 +59,10 @@ public class ClientImpl implements Client {
 					processFileList(reader);
 				} 
 				
+				if (response.equals(ResponseType.DELETE_FILE.toString())) {
+					System.out.println(reader.readLine());
+				}
+				
 			}
 			
 		} catch (SocketException e) {

@@ -1,6 +1,11 @@
 package com.ctransfer.utils;
 
 import java.io.File;
+import java.io.IOException;
+import java.nio.file.Files;
+import java.nio.file.InvalidPathException;
+import java.nio.file.Path;
+import java.nio.file.Paths;
 import java.util.ArrayList;
 import java.util.List;
 import java.util.logging.Logger;
@@ -46,6 +51,34 @@ public class FileUtils {
         
     }
     
+    public static boolean deleteFile(String directory, String fileName) {
+    	
+    	Boolean success = false;
+    	
+		try {
+			
+	    	Path path = Paths.get(directory + fileName);
+			success = Files.deleteIfExists(path);
+			
+		} catch (IOException e) {
+			e.printStackTrace();
+			
+		} catch (InvalidPathException e) {
+			e.printStackTrace();
+			
+		}
+    	
+    	if (!success) {
+    		LOGGER.warning("File could not be deleted because it does not exist.");
+    	}
+    	
+    	return success;
+    	
+    }
+    
+    /**
+     * Returns true if a file ends with an extension contained in the specified list of extensions.
+     */
     private static boolean validExtension(File file, String[] extensions) {
     	
     	boolean valid = false;
