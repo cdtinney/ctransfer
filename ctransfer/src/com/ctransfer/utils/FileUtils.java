@@ -76,6 +76,30 @@ public class FileUtils {
     	
     }
     
+    public static boolean createDirectory(String path) {
+
+    	boolean success = false;
+    	
+    	File dir = new File(path);
+    	if (!dir.exists()) {
+    		 
+    		try {
+    			success = dir.mkdir();
+    			
+    		} catch (Exception e) {
+    			e.printStackTrace();
+    			
+    		}
+    		 
+    	} else {
+    		success = true;
+    		
+    	}
+    	
+    	return success;
+    	
+    }
+    
     /**
      * Returns true if a file ends with an extension contained in the specified list of extensions.
      */

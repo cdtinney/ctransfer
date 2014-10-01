@@ -12,12 +12,13 @@ import java.util.Scanner;
 
 import com.ctransfer.enums.ResponseType;
 import com.ctransfer.utils.EnumUtils;
+import com.ctransfer.utils.FileUtils;
 import com.ctransfer.utils.OSUtils;
 
 // TODO - Allow user to specify IP/Port to connect to (?)
 public class ClientImpl implements Client {
 
-	private String pwd = System.getProperty("user.dir");
+	private String pwd;
 	
 	private final String hostName;
 	private final Integer port;
@@ -242,14 +243,21 @@ public class ClientImpl implements Client {
 	
 	private void setPwdByOS() {
 		
+		String home = System.getProperty("user.home");
+		
 		if (OSUtils.isWindows()) {
-			pwd += "\\client\\";
+			pwd = home + "\\client\\";
 			
 		} else if (OSUtils.isMac() || OSUtils.isUnix()) {
-			pwd += "/client/";
+			pwd = home + "/client/";
 			
 		}
 		
+		boolean exists = FileUtils.createDirectory(pwd);
+		if (!exists) {
+			System.out.println("Failed to create PWD: " + pwd);
+		}
+	
 	}
 
 }

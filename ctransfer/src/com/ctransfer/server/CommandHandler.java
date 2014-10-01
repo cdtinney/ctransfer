@@ -4,10 +4,10 @@ import java.io.PrintWriter;
 
 import com.ctransfer.enums.ResponseType;
 
-public interface Command {
+public interface CommandHandler {
 
 	public ResponseType getResponseType();
-	public void run(PrintWriter writer, String[] args);
+	public void handle(PrintWriter writer, String[] args);
 	
 
 }

@@ -13,6 +13,8 @@ import java.util.Arrays;
 import java.util.HashMap;
 import java.util.List;
 
+import javax.swing.filechooser.FileSystemView;
+
 import com.ctransfer.enums.ResponseType;
 import com.ctransfer.utils.ArrayUtils;
 import com.ctransfer.utils.FileUtils;
@@ -27,14 +29,14 @@ public class ServerImpl implements Server {
 	private ServerSocket serverSocket = null;
 	private Socket clientSocket = null;
 	
-	private HashMap<String, Command> commands;
+	private HashMap<String, CommandHandler> commandHandlers;
 
 	private String pwd = System.getProperty("user.dir");
 	
 	public ServerImpl(Integer port) {
 		this.port = port;
 		
-		commands = new HashMap<String, Command>();
+		commandHandlers = new HashMap<String, CommandHandler>();
 		addCommands();
 		
 		setPwdByOS();
@@ -149,7 +151,7 @@ public class ServerImpl implements Server {
 		// Set the command to lower case, since that is how they're mapped
 		String commandStr = nonEmptyParts[0].toLowerCase();
 		
-		Command command = commands.get(commandStr);
+		CommandHandler command = commandHandlers.get(commandStr);
 		if (command == null) {
 			writer.println(ResponseType.ERROR + "- Unrecognized command: " + commandStr);
 			return;
@@ -162,13 +164,17 @@ public class ServerImpl implements Server {
 		String[] args = Arrays.copyOfRange(nonEmptyParts, 1, nonEmptyParts.length);
 		
 		// Run the command, passing the socket so it can send directly to the client
-		command.run(writer, args);
+		command.handle(writer, args);
 		
 	}
 	
 	private void addCommands() {
 		
-		commands.put("ls", new Command() {
+		if (commandHandlers == null) {
+			return;
+		}
+		
+		commandHandlers.put("ls", new CommandHandler() {
 
 			@Override
 			public ResponseType getResponseType() {
@@ -176,7 +182,7 @@ public class ServerImpl implements Server {
 			}
 
 			@Override
-			public void run(PrintWriter writer, String[] args) {
+			public void handle(PrintWriter writer, String[] args) {
 
 				// Send the present working directory (pwd)
 				writer.println(pwd);
@@ -217,7 +223,7 @@ public class ServerImpl implements Server {
 			
 		});
 		
-		commands.put("delete", new Command() {
+		commandHandlers.put("delete", new CommandHandler() {
 
 			@Override
 			public ResponseType getResponseType() {
@@ -225,7 +231,7 @@ public class ServerImpl implements Server {
 			}
 
 			@Override
-			public void run(PrintWriter writer, String[] args) {
+			public void handle(PrintWriter writer, String[] args) {
 
 				String fileName = args[0];
 				Boolean result = FileUtils.deleteFile(pwd, fileName);
@@ -236,7 +242,7 @@ public class ServerImpl implements Server {
 			
 		});
 		
-		commands.put("get", new Command() {
+		commandHandlers.put("get", new CommandHandler() {
 
 			@Override
 			public ResponseType getResponseType() {
@@ -244,7 +250,7 @@ public class ServerImpl implements Server {
 			}
 
 			@Override
-			public void run(PrintWriter writer, String[] args) {
+			public void handle(PrintWriter writer, String[] args) {
 				
 				try {
 
@@ -283,12 +289,19 @@ public class ServerImpl implements Server {
 	
 	private void setPwdByOS() {
 		
+		String home = System.getProperty("user.home");
+		
 		if (OSUtils.isWindows()) {
-			pwd += "\\server\\";
+			pwd = home + "\\server\\";
 			
 		} else if (OSUtils.isMac() || OSUtils.isUnix()) {
-			pwd += "/server/";
+			pwd = home + "/server/";
 			
+		}
+		
+		boolean exists = FileUtils.createDirectory(pwd);
+		if (!exists) {
+			System.out.println("Failed to create PWD: " + pwd);
 		}
 	
 	}
