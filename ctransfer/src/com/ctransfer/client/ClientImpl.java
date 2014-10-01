@@ -3,6 +3,7 @@ package com.ctransfer.client;
 import java.io.BufferedReader;
 import java.io.File;
 import java.io.FileOutputStream;
+import java.io.IOException;
 import java.io.InputStreamReader;
 import java.io.PrintWriter;
 import java.net.InetSocketAddress;
@@ -45,61 +46,39 @@ public class ClientImpl implements Client {
 	@Override
 	public void start() throws Exception {
 		
-		BufferedReader reader = null;
-		PrintWriter writer = null;
+		Scanner sc = new Scanner(System.in);
 		
-		Scanner sc = new Scanner(System.in); 
-		
+		// Ask the user for a host name and port
 		getHostnameAndPort(sc);
+		
+		// Connect the socket
+		if (!connect()) {
+			return;
+		}
 				
-		try {
-			
-			// Connects to hostName:port, with a timeout of 1s
-			socket.connect(new InetSocketAddress(hostName, port), 1000);
-			
-			System.out.println("Connection established to: " + socket.getRemoteSocketAddress());
-
-			reader = new BufferedReader(new InputStreamReader(socket.getInputStream()));
-			writer = new PrintWriter(socket.getOutputStream(), true);
+		try (
+				BufferedReader reader = new BufferedReader(new InputStreamReader(socket.getInputStream()));
+				PrintWriter writer = new PrintWriter(socket.getOutputStream(), true);
+		) {
 			
 			String response = null;
 			while (true) {
 
 			    String input = getUserInput(sc);
-			    if (input != null) {
-			        writer.println(input);
+			    if (input == null || input.trim().isEmpty()) {
+			    	continue;
 			    }
-				
+			    
+			    writer.println(input);
+			    
 				response = reader.readLine();
 				if (response == null) {
 					break;
 				}
 
-			    System.out.println("\nReceived response: " + response + "\n");
-			    
-			    if (response.contains(ResponseType.ERROR.toString())) {
-			    	System.out.println(response);
-			    	continue;
-			    }
-			    
-			    ResponseType responseType = EnumUtils.lookup(ResponseType.class, response);
-			    if (responseType == null) {
-			    	System.out.println("Unrecognized ResponseType: " + response);
-			    	continue;
-			    }
-			    
-			    ResponseHandler responseHandler = responseHandlers.get(responseType);
-			    if (responseHandler == null) {
-			    	System.out.println("No response handler found for: " + responseType);
-			    	continue;
-			    }
-			    
-			    responseHandler.handleResponse(reader);
+			    processResponse(response, reader);
 				
 			}
-			
-		} catch (SocketTimeoutException e) {
-			System.out.println("SocketTimeoutException: Connection attempt to [" + (hostName) + ":" + port + "] has timed out.");
 			
 		} catch (SocketException e) {
 			System.out.println("SocketException: The connection has most likely been closed.");
@@ -108,16 +87,6 @@ public class ClientImpl implements Client {
 			e.printStackTrace();
 			
 		} finally {
-			
-			System.out.println("Cleaning up resources.");
-			
-			if (reader != null) {
-				reader.close();
-			}
-			
-			if (writer != null) {
-				writer.close();
-			}
 			
 			if (sc != null) {
 				sc.close();
@@ -142,6 +111,58 @@ public class ClientImpl implements Client {
 			e.printStackTrace();
 			
 		}
+		
+	}
+	
+	private boolean connect() {
+		
+		if (socket == null) {
+			socket = new Socket();
+		}
+		
+		try {
+			
+			// Connects to hostName:port, with a timeout of 1s
+			socket.connect(new InetSocketAddress(hostName, port), 1000);			
+			
+			System.out.println("Connection established to: " + socket.getRemoteSocketAddress());
+			
+			return true;
+			
+		} catch (SocketTimeoutException e) {
+			System.out.println("SocketTimeoutException: Connection attempt to [" + (hostName) + ":" + port + "] has timed out.");
+			
+		} catch (IOException e) {
+			System.out.println("IOException: Connection attempt to [" + (hostName) + ":" + port + "] has failed.");
+			System.out.println(e.getMessage());
+			
+		}
+		
+		return false;		
+		
+	}
+	
+	private boolean processResponse(String response, BufferedReader reader) throws Exception {
+	    
+	    if (response.contains(ResponseType.ERROR.toString())) {
+	    	System.out.println(response);
+	    	return false;
+	    }
+	    
+	    ResponseType responseType = EnumUtils.lookup(ResponseType.class, response);
+	    if (responseType == null) {
+	    	System.out.println("Unrecognized ResponseType: " + response);
+	    	return false;
+	    }
+	    
+	    ResponseHandler responseHandler = responseHandlers.get(responseType);
+	    if (responseHandler == null) {
+	    	System.out.println("No response handler found for: " + responseType);
+	    	return false;
+	    }
+	    
+	    responseHandler.handleResponse(reader);
+	    return true;
 		
 	}
 	
