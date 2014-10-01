@@ -2,10 +2,10 @@ package com.ctransfer.application;
 
 import java.util.Scanner;
 
-import com.ctransfer.application.client.Client;
-import com.ctransfer.application.client.ClientImpl;
-import com.ctransfer.application.server.Server;
-import com.ctransfer.application.server.ServerImpl;
+import com.ctransfer.client.Client;
+import com.ctransfer.client.ClientImpl;
+import com.ctransfer.server.Server;
+import com.ctransfer.server.ServerImpl;
 
 public class Application {
 	

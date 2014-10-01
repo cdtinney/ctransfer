@@ -1,4 +1,4 @@
-package com.ctransfer.application.client;
+package com.ctransfer.client;
 
 import java.io.BufferedReader;
 import java.io.File;
@@ -10,7 +10,7 @@ import java.net.SocketException;
 import java.util.HashMap;
 import java.util.Scanner;
 
-import com.ctransfer.application.ResponseType;
+import com.ctransfer.enums.ResponseType;
 
 // TODO - Allow user to specify IP/Port to connect to (?)
 public class ClientImpl implements Client {

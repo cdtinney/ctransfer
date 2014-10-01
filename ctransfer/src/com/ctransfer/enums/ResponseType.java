@@ -1,4 +1,4 @@
-package com.ctransfer.application;
+package com.ctransfer.enums;
 
 public enum ResponseType {
 	

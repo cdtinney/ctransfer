@@ -1,4 +1,4 @@
-package com.ctransfer.application.server;
+package com.ctransfer.server;
 
 public interface Server {
 

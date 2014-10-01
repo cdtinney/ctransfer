@@ -1,8 +1,8 @@
-package com.ctransfer.application.server;
+package com.ctransfer.server;
 
 import java.io.PrintWriter;
 
-import com.ctransfer.application.ResponseType;
+import com.ctransfer.enums.ResponseType;
 
 public interface Command {
 

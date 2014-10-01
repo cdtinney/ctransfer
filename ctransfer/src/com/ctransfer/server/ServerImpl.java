@@ -1,4 +1,4 @@
-package com.ctransfer.application.server;
+package com.ctransfer.server;
 
 import java.io.BufferedReader;
 import java.io.File;
@@ -13,7 +13,7 @@ import java.util.Arrays;
 import java.util.HashMap;
 import java.util.List;
 
-import com.ctransfer.application.ResponseType;
+import com.ctransfer.enums.ResponseType;
 import com.ctransfer.utils.FileUtils;
 import com.google.common.io.Files;
 
