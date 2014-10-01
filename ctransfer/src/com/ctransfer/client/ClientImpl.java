@@ -1,4 +1,4 @@
-package com.ctransfer.application.client;
+package com.ctransfer.client;
 
 import java.io.BufferedReader;
 import java.io.File;
@@ -10,8 +10,13 @@ import java.net.SocketException;
 import java.util.HashMap;
 import java.util.Scanner;
 
+<<<<<<< HEAD:ctransfer/src/com/ctransfer/application/client/ClientImpl.java
 import com.ctransfer.application.ResponseType;
 import com.ctransfer.utils.OSValidator;
+=======
+import com.ctransfer.enums.ResponseType;
+import com.ctransfer.utils.EnumUtils;
+>>>>>>> 3e906c0fbe66fa3ed111e1e7def5a71afa176ddf:ctransfer/src/com/ctransfer/client/ClientImpl.java
 
 // TODO - Allow user to specify IP/Port to connect to (?)
 public class ClientImpl implements Client {
@@ -73,7 +78,17 @@ public class ClientImpl implements Client {
 
 			    System.out.println("\nReceived response: " + response + "\n");
 			    
-			    ResponseType responseType = ResponseType.valueOf(response);
+			    if (response.contains(ResponseType.ERROR.toString())) {
+			    	System.out.println(response);
+			    	continue;
+			    }
+			    
+			    ResponseType responseType = EnumUtils.lookup(ResponseType.class, response);
+			    if (responseType == null) {
+			    	System.out.println("Unrecognized ResponseType: " + response);
+			    	continue;
+			    }
+			    
 			    ResponseHandler responseHandler = responseHandlers.get(responseType);
 			    if (responseHandler == null) {
 			    	System.out.println("No response handler found for: " + responseType);

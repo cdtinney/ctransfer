@@ -1,4 +1,4 @@
-package com.ctransfer.application.server;
+package com.ctransfer.server;
 
 import java.io.BufferedReader;
 import java.io.File;
@@ -13,8 +13,14 @@ import java.util.Arrays;
 import java.util.HashMap;
 import java.util.List;
 
+<<<<<<< HEAD:ctransfer/src/com/ctransfer/application/server/ServerImpl.java
 import com.ctransfer.application.ResponseType;
 import com.ctransfer.utils.*;
+=======
+import com.ctransfer.enums.ResponseType;
+import com.ctransfer.utils.ArrayUtils;
+import com.ctransfer.utils.FileUtils;
+>>>>>>> 3e906c0fbe66fa3ed111e1e7def5a71afa176ddf:ctransfer/src/com/ctransfer/server/ServerImpl.java
 import com.google.common.io.Files;
 
 // TODO - Comments
@@ -139,15 +145,19 @@ public class ServerImpl implements Server {
 	
 	private void processRequest(String request, PrintWriter writer) {
 		
-		// Split by whitespace.
+		// Trim leading/trailing white space
+		request = request.trim();
+		
+		// Split by whitespace, remove empty strings
 		String[] parts = request.split(" ");
+		String[] nonEmptyParts = ArrayUtils.removeEmptyStrings(parts);
 		
 		// Set the command to lower case, since that is how they're mapped
-		String commandStr = parts[0].toLowerCase();
+		String commandStr = nonEmptyParts[0].toLowerCase();
 		
 		Command command = commands.get(commandStr);
 		if (command == null) {
-			writer.println("Unrecognized command: " + commandStr);
+			writer.println(ResponseType.ERROR + "- Unrecognized command: " + commandStr);
 			return;
 		}
 		
@@ -155,7 +165,7 @@ public class ServerImpl implements Server {
 		writer.println(command.getResponseType());
 
 		// Parse out the arguments
-		String[] args = Arrays.copyOfRange(parts, 1, parts.length);
+		String[] args = Arrays.copyOfRange(nonEmptyParts, 1, nonEmptyParts.length);
 		
 		// Run the command, passing the socket so it can send directly to the client
 		command.run(writer, args);
@@ -246,7 +256,7 @@ public class ServerImpl implements Server {
 
 					// TODO - handle this
 					if (args.length < 1) {
-						writer.println("Error! No file name specified.");
+						writer.println(ResponseType.ERROR + " - no file named specified.");
 						return;
 					}
 					
@@ -254,7 +264,7 @@ public class ServerImpl implements Server {
 					
 					File file = new File(pwd + fileName);
 					if (!file.exists()) {
-						writer.println("File does not exist!");
+						writer.println(ResponseType.ERROR + " - file does not exist.");
 						// TODO - How to cancel transfer on client at this point
 					}
 					
