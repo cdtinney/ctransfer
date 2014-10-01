@@ -42,20 +42,22 @@ public class ClientImpl implements Client {
 			
 			String response = null;
 			while (true) {
-				
-				response = reader.readLine();
-				if (response == null) {
-					break;
-				}
-
-				// TODO - Separate console printing/input with SocketClient wrapper
-			    System.out.println("Server response: " + response);
 
 			    String input = getUserInput(sc);
 			    if (input != null) {
 			        writer.println(input);
 			    }
 				
+				response = reader.readLine();
+				if (response == null) {
+					break;
+				}
+
+			    System.out.println("\nReceived response: " + response + "\n");
+				
+				if (response.equals(ResponseType.FILE_LIST.toString())) {
+					processFileList(reader);
+				} 
 				
 			}
 			
@@ -103,13 +105,34 @@ public class ClientImpl implements Client {
 		
 	}
 	
+	private void processFileList(BufferedReader reader) throws Exception {
+		
+		String pwd = reader.readLine();
+		System.out.println("Present Working Directory: " + pwd);
+		
+		Integer numFiles = Integer.parseInt(reader.readLine());
+		System.out.println("# Files/Folders: " + numFiles + "\n");
+		
+		if (numFiles == -1) {
+			System.out.println("End of stream reached");
+			return;
+		}
+		
+		for (int i=0; i<numFiles; i++) {
+			System.out.println("\t" + reader.readLine());
+		}
+		
+		System.out.println("\nAll contents listed.");
+		
+	}
+	
 	private String getUserInput(Scanner sc) {
 		
 		if (sc == null) {
 			return null;
 		}
 
-	    System.out.print(">");
+	    System.out.print("\nctransfer > ");
 	    return sc.nextLine();
 		
 	}

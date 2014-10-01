@@ -86,18 +86,18 @@ public class ServerImpl implements Server {
 
 			reader = new BufferedReader(new InputStreamReader(clientSocket.getInputStream()));
 			writer = new PrintWriter(clientSocket.getOutputStream(), true);
-			
-		    writer.println("Initial response.");
 		    
 		    while (true) {
 		    	
+		    	System.out.println("Waiting for request...");
 		    	String clientRequest = reader.readLine();
 		    	if (clientRequest == null) {
 		    		break;
 		    	}
-		    	
-		    	String response = processRequest(clientRequest);
-		    	writer.println(response);
+
+		    	System.out.println("Processing request: " + clientRequest);
+		    	processRequest(clientRequest, writer);
+		    	System.out.println("Request processed.");
 		    	
 		    }
 		    
@@ -126,22 +126,42 @@ public class ServerImpl implements Server {
 		
 	}
 	
-	private String processRequest(String request) {
+	private void processRequest(String request, PrintWriter writer) {
 		
-		// Trim extra white space
-		request = request.trim();
 		
-		if (!commands.containsKey(request))  {
-			return "Unrecognized command";
+		// Trim leading/trailing white space and set to lower case
+		request = request.trim().toLowerCase();
+		
+		// No command found for the client request
+		if (!commands.containsKey(request)) {
+			writer.println("Unrecognized command: " + request);
+			return;
 		}
 		
 		Command command = commands.get(request);
+		writer.println(command.getResponseType());
 		
-		// Run the command
-		command.run();
+		if (command.getResponseType() == ResponseType.FILE_LIST) {
+			
+			// Send the client the PWD.
+			writer.println(pwd);
+			
+			String lines[] = command.getResponse().split("\\n");
+			
+			// Send the client the number of strings we are about to send
+			writer.println(lines.length);
+			
+			for (String s : lines) {
+				writer.println(s);
+			}
+			
+		} else {
+			writer.println(command.getResponse());
+			
+		}
 		
-		// Return the computed response
-		return command.getResponse();
+		// Run the command (TODO - Is this necessary?)
+		// command.run();
 		
 	}
 	
@@ -162,18 +182,35 @@ public class ServerImpl implements Server {
 			@Override
 			public String getResponse() {
 				
-				List<File> files = FileUtils.listFiles(pwd, null);
+				List<File> files = FileUtils.listFiles(pwd, null, true);
 				
 				StringBuilder sb = new StringBuilder();
 				for (File f : files) {
 					
-					// TODO - Display folders differently
 					sb.append(f.getName());
-					sb.append("\t");
+					
+					if (f.isDirectory()) {
+						sb.append("\\");
+					}
+					
+					sb.append("\n");
 					
 				}
 				
 				return sb.toString();
+				
+			}
+
+			@Override
+			public ResponseType getResponseType() {
+				return ResponseType.FILE_LIST;
+			}
+
+			@Override
+			public byte[] getResponseBytes() {
+				
+				String response = getResponse();
+				return response.getBytes();
 				
 			}
 			
@@ -204,6 +241,19 @@ public class ServerImpl implements Server {
 			@Override
 			public void run() {
 				System.out.println("running help");
+			}
+
+			@Override
+			public ResponseType getResponseType() {
+				return null;
+			}
+
+			@Override
+			public byte[] getResponseBytes() {
+				
+				String response = getResponse();
+				return response.getBytes();
+				
 			}
 			
 		});

@@ -8,12 +8,16 @@ import java.util.logging.Logger;
 public class FileUtils {
 	
 	private static Logger LOGGER = Logger.getLogger(FileUtils.class.getName());
-
-	/*
-	 * Returns a list of all the files within a directory with valid extensions.
-	 * If no extensions are specified, all files are returned.
-	 */
-    public static List<File> listFiles(String directoryName, String[] extensions) {
+	
+    /**
+     * Returns a list of files/folders within a directory.
+     * 
+     * @param directoryName The root directory to list contents of.
+     * @param extensions A list of valid extensions. If not null/empty, only files with an extension contained in this list will be added.
+     * @param includeFolders If true, folders are included in the list.
+     * @return A list of files/folders contained within the directory.
+     */
+    public static List<File> listFiles(String directoryName, String[] extensions, Boolean includeFolders) {
     	
     	List<File> results = new ArrayList<File>();    	
     	
@@ -27,24 +31,14 @@ public class FileUtils {
         
         for (File file : fList) {
         	
-        	if (file.isDirectory()) {
-        		
-        		results.add(file);
-        		
-        		// Recursively add files within sub-directories
-        		//results.addAll(listFiles(file.getAbsolutePath(), extensions));
-        		
-        	} else {
-        		
-        		if (extensions == null) {
-        			results.add(file);
-        			continue;
-        		}
-        		
-        		if (validExtension(file, extensions)) {
-        			results.add(file);
-        		}
+        	if ((includeFolders && file.isDirectory()) || extensions == null) {
+    			results.add(file);
+    			continue;
         	}
+    		
+    		if (validExtension(file, extensions)) {
+    			results.add(file);
+    		}
         	
         }
         
