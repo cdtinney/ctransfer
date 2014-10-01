@@ -210,16 +210,6 @@ public class ServerImpl implements Server {
 		commands.put("ls", new Command() {
 
 			@Override
-			public String getCommandString() {
-				return "ls";
-			}
-
-			@Override
-			public void run() {
-				System.out.println("running ls");
-			}
-
-			@Override
 			public String getResponse() {
 				
 				List<File> files = FileUtils.listFiles(pwd, null, true);
@@ -245,81 +235,36 @@ public class ServerImpl implements Server {
 			public ResponseType getResponseType() {
 				return ResponseType.FILE_LIST;
 			}
-
-			@Override
-			public byte[] getResponseBytes() {
-				
-				String response = getResponse();
-				return response.getBytes();
-				
-			}
 			
 		});
 		
 		commands.put("delete", new Command() {
 
 			@Override
-			public String getCommandString() {
-				return "delete";
-			}
-
-			@Override
 			public String getResponse() {
 				return null;
-			}
-
-			@Override
-			public void run() {
-				System.out.println("running delete");
 			}
 
 			@Override
 			public ResponseType getResponseType() {
 				return ResponseType.DELETE_FILE;
 			}
-
-			@Override
-			public byte[] getResponseBytes() {
-				
-				String response = getResponse();
-				return response.getBytes();
-				
-			}
 			
 		});
 		
 		commands.put("get", new Command() {
-
-			@Override
-			public String getCommandString() {
-				return "get";
-			}
-
+			
 			@Override
 			public String getResponse() {
 				return null;
 			}
 
 			@Override
-			public void run() {
-				System.out.println("running get");
-			}
-
-			@Override
 			public ResponseType getResponseType() {
 				return ResponseType.FILE_TRANSFER;
 			}
-
-			@Override
-			public byte[] getResponseBytes() {
-				
-				String response = getResponse();
-				return response.getBytes();
-				
-			}
 			
 		});
-		
 		
 	}
 
