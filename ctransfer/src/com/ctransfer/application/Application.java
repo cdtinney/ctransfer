@@ -16,6 +16,7 @@ public class Application {
 	public static void init() {
 		
 		print("Network file service launched.");
+		print("Initialized at: " + System.getProperty("user.dir"));
 		print("--------------------------------");
 		print("Please make a selection.");
 		print("\t1. Server");
@@ -27,7 +28,7 @@ public class Application {
 		
 			Integer selection = sc.nextInt();
 			if (selection == 1) {
-				Server server = new ServerImpl(9000);
+				Server server = new ServerImpl(9000);	
 				server.start();
 				
 			} else if (selection == 2) {
@@ -44,7 +45,7 @@ public class Application {
 	}
 
 	public static void main(String[] args) {
-	
+		
 		init();
 		
 	}
