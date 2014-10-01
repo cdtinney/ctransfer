@@ -247,18 +247,16 @@ public class ServerImpl implements Server {
 				
 				try {
 
-					// TODO - handle this
 					if (args.length < 1) {
-						writer.println(ResponseType.ERROR + " - no file named specified.");
+						writer.println(ResponseType.ERROR + " - No file named specified.");
 						return;
 					}
 					
 					String fileName = args[0];
-					
 					File file = new File(pwd + fileName);
 					if (!file.exists()) {
-						writer.println(ResponseType.ERROR + " - file does not exist.");
-						// TODO - How to cancel transfer on client at this point
+						writer.println(ResponseType.ERROR + " - File does not exist.");
+						return;
 					}
 					
 					// Send file name

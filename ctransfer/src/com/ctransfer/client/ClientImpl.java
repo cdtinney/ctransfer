@@ -181,16 +181,15 @@ public class ClientImpl implements Client {
 			@Override
 			public void handleResponse(BufferedReader reader) throws Exception {
 				
-				// TODO - Use constant strs/error codes
 				String fileName = reader.readLine();
-				if (fileName.equals("File does not exist!") || fileName.equals("Error! No file name specified.")) {
-					System.out.println("File not found or no file name specified.");
+				if (checkForErrors(fileName)) {
+					System.out.println(fileName);
 					return;
 				}
 				
 				Integer fileSize = Integer.parseInt(reader.readLine());
 				if (fileSize < 0) {
-					System.out.println("File size < 0.");
+					System.out.println("Invalid file size: " + fileSize);
 					return;
 				}
 				
@@ -219,6 +218,12 @@ public class ClientImpl implements Client {
 			}
 			
 		});
+		
+	}
+	
+	private boolean checkForErrors(String response) {
+		
+		return response.contains(ResponseType.ERROR.toString());
 		
 	}
 	
