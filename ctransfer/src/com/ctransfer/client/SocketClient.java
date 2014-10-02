@@ -19,7 +19,7 @@ import com.ctransfer.utils.FileUtils;
 import com.ctransfer.utils.OSUtils;
 
 // TODO - Allow user to specify IP/Port to connect to (?)
-public class ClientImpl implements Client {
+public class SocketClient {
 
 	private String pwd;
 	
@@ -30,7 +30,7 @@ public class ClientImpl implements Client {
 	
 	private HashMap<ResponseType, ResponseHandler> responseHandlers;
 	
-	public ClientImpl(String hostName, Integer port) {
+	public SocketClient(String hostName, Integer port) {
 		this.hostName = hostName;
 		this.port = port;		
 		
@@ -43,7 +43,6 @@ public class ClientImpl implements Client {
 		
 	}
 
-	@Override
 	public void start() throws Exception {
 		
 		Scanner sc = new Scanner(System.in);
@@ -96,7 +95,6 @@ public class ClientImpl implements Client {
 		
 	}
 
-	@Override
 	public void stop() {
 		
 		try {
@@ -253,9 +251,7 @@ public class ClientImpl implements Client {
 	}
 	
 	private boolean checkForErrors(String response) {
-		
 		return response.contains(ResponseType.ERROR.toString());
-		
 	}
 	
 	private String getUserInput(Scanner sc) {

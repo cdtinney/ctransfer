@@ -3,9 +3,9 @@ package com.ctransfer.application;
 import java.util.Scanner;
 
 import com.ctransfer.client.Client;
-import com.ctransfer.client.ClientImpl;
+import com.ctransfer.client.SocketClient;
 import com.ctransfer.server.Server;
-import com.ctransfer.server.ServerImpl;
+import com.ctransfer.server.SocketServer;
 
 public class Application {
 	
@@ -28,11 +28,11 @@ public class Application {
 		
 			Integer selection = sc.nextInt();
 			if (selection == 1) {
-				Server server = new ServerImpl(9000);	
+				Server server = new SocketServer(9000);	
 				server.start();
 				
 			} else if (selection == 2) {
-				Client client = new ClientImpl("localhost", 9000);
+				Client client = new SocketClient("localhost", 9000);
 				client.start();
 				
 			}

@@ -20,7 +20,7 @@ import com.ctransfer.utils.OSUtils;
 import com.google.common.io.Files;
 
 // TODO - Comments
-public class ServerImpl implements Server {
+public class SocketServer {
 	
 	private final Integer port;
 	
@@ -31,7 +31,7 @@ public class ServerImpl implements Server {
 
 	private String pwd = System.getProperty("user.dir");
 	
-	public ServerImpl(Integer port) {
+	public SocketServer(Integer port) {
 		this.port = port;
 		
 		commandHandlers = new HashMap<String, CommandHandler>();
@@ -41,7 +41,6 @@ public class ServerImpl implements Server {
 		
 	}
 
-	@Override
 	public void start() {
 		
 		try {
@@ -66,7 +65,6 @@ public class ServerImpl implements Server {
 		
 	}
 
-	@Override
 	public void stop() {
 		
 		try {
