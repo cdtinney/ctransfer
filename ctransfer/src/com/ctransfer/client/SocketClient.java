@@ -13,12 +13,22 @@ import java.net.SocketTimeoutException;
 import java.util.HashMap;
 import java.util.Scanner;
 
+import com.ctransfer.application.Application;
 import com.ctransfer.enums.ResponseType;
 import com.ctransfer.utils.EnumUtils;
 import com.ctransfer.utils.FileUtils;
 import com.ctransfer.utils.OSUtils;
 
-// TODO - Allow user to specify IP/Port to connect to (?)
+/**
+ * The SocketClient contains the main implementation of the client 
+ * for the ctransfer application. Handles all aspects of the client
+ * socket and communication with the server. As contains the map of 
+ * all accepted responses and handlers.  
+ *
+ * @author Ben Sweett & Colin Tinney
+ * @version 1.0
+ * @since 2014-09-29
+ */
 public class SocketClient {
 
 	private String pwd;
@@ -30,6 +40,13 @@ public class SocketClient {
 	
 	private HashMap<ResponseType, ResponseHandler> responseHandlers;
 	
+	/**
+	 * Constructor for the SocketClient. Opens a socket, collects
+	 * all of the supported response types and their handlers, and 
+	 * sets the present working directory. 
+	 * 
+	 * @param String host name and Integer port
+	 */
 	public SocketClient(String hostName, Integer port) {
 		this.hostName = hostName;
 		this.port = port;		
@@ -43,6 +60,16 @@ public class SocketClient {
 		
 	}
 
+	/**
+	 * After getting the host name and port name from the user
+	 * the start function will attempt to connect to the server.
+	 * While connected it will listen for user input and call 
+	 * the function for processing commands. 
+	 * 
+	 * @throws Exception
+	 * @param None
+	 * @return void
+	 */
 	public void start() throws Exception {
 		
 		Scanner sc = new Scanner(System.in);
@@ -80,10 +107,12 @@ public class SocketClient {
 			}
 			
 		} catch (SocketException e) {
-			System.out.println("SocketException: The connection has most likely been closed.");
+			System.err.println("SocketException: The connection has most likely been closed.");
+			Application.init();
 			
 		} catch (Exception e) {
 			e.printStackTrace();
+			System.exit(-1);
 			
 		} finally {
 			
@@ -95,6 +124,14 @@ public class SocketClient {
 		
 	}
 
+	/**
+	 * The stop function handles the clean up of networking 
+	 * resources on the client. It attempts to close the 
+	 * socket safely. 
+	 * 
+	 * @param None
+	 * @return void
+	 */
 	public void stop() {
 		
 		try {
@@ -107,11 +144,21 @@ public class SocketClient {
 		
 		} catch (Exception e) {
 			e.printStackTrace();
-			
+			System.exit(-1);
+	
 		}
 		
 	}
 	
+	/**
+	 * The connect function will handle the initial connection
+	 * to the server. It creates a new socket and tries to 
+	 * connect to the host name and address name given by the 
+	 * user. 
+	 * 
+	 * @param None
+	 * @return boolean success or failure
+	 */
 	private boolean connect() {
 		
 		if (socket == null) {
@@ -128,11 +175,11 @@ public class SocketClient {
 			return true;
 			
 		} catch (SocketTimeoutException e) {
-			System.out.println("SocketTimeoutException: Connection attempt to [" + (hostName) + ":" + port + "] has timed out.");
+			System.err.println("SocketTimeoutException: Connection attempt to [" + (hostName) + ":" + port + "] has timed out.");
 			
 		} catch (IOException e) {
-			System.out.println("IOException: Connection attempt to [" + (hostName) + ":" + port + "] has failed.");
-			System.out.println(e.getMessage());
+			System.err.println("IOException: Connection attempt to [" + (hostName) + ":" + port + "] has failed.");
+			System.err.println(e.getMessage());
 			
 		}
 		
@@ -140,6 +187,13 @@ public class SocketClient {
 		
 	}
 	
+	/**
+	 * The Process Response function checks to make sure the 
+	 * response from the server was no an error and 
+	 * 
+	 * @param None
+	 * @return boolean success or failure
+	 */
 	private boolean processResponse(String response, BufferedReader reader) throws Exception {
 	    
 	    if (response.contains(ResponseType.ERROR.toString())) {
@@ -149,13 +203,13 @@ public class SocketClient {
 	    
 	    ResponseType responseType = EnumUtils.lookup(ResponseType.class, response);
 	    if (responseType == null) {
-	    	System.out.println("Unrecognized ResponseType: " + response);
+	    	System.err.println("Unrecognized ResponseType: " + response);
 	    	return false;
 	    }
 	    
 	    ResponseHandler responseHandler = responseHandlers.get(responseType);
 	    if (responseHandler == null) {
-	    	System.out.println("No response handler found for: " + responseType);
+	    	System.err.println("No response handler found for: " + responseType);
 	    	return false;
 	    }
 	    
@@ -246,6 +300,20 @@ public class SocketClient {
 		        System.out.println("File successfully transferred.");
 			}
 			
+		});
+		
+		responseHandlers.put(ResponseType.EXIT, new ResponseHandler() {
+			
+			@Override
+			public void handleResponse(BufferedReader reader) throws Exception {
+				
+				String response = reader.readLine();
+				System.out.println(response + "\n");
+				
+				stop();
+				System.exit(0);
+				
+			}
 		});
 		
 	}

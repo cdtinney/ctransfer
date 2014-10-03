@@ -5,6 +5,7 @@ import java.io.File;
 import java.io.IOException;
 import java.io.InputStreamReader;
 import java.io.PrintWriter;
+import java.net.BindException;
 import java.net.ServerSocket;
 import java.net.Socket;
 import java.net.SocketException;
@@ -13,6 +14,7 @@ import java.util.Arrays;
 import java.util.HashMap;
 import java.util.List;
 
+import com.ctransfer.application.Application;
 import com.ctransfer.enums.ResponseType;
 import com.ctransfer.utils.ArrayUtils;
 import com.ctransfer.utils.FileUtils;
@@ -29,7 +31,7 @@ public class SocketServer {
 	
 	private HashMap<String, CommandHandler> commandHandlers;
 
-	private String pwd = System.getProperty("user.dir");
+	private String pwd = "";
 	
 	public SocketServer(Integer port) {
 		this.port = port;
@@ -54,13 +56,18 @@ public class SocketServer {
 			// Wait for a connection (note: this is a blocking call)
 			clientSocket = serverSocket.accept();
 			
-			System.out.println("..connected to: " + clientSocket.getRemoteSocketAddress());
+			System.out.println("Client connected: " + clientSocket.getRemoteSocketAddress());
 			
 			listen();
 			
 		} catch (Exception e) {
+			if(e instanceof BindException) {
+				System.err.println("A Server is already running at this address.");
+				Application.init();
+			}
+				
 			e.printStackTrace();
-			
+			System.exit(-1);
 		} 
 		
 	}
@@ -98,15 +105,15 @@ public class SocketServer {
 		    
 		    while (true) {
 		    	
-		    	System.out.println("Waiting for request...");
+		    	System.out.println("Waiting for request...\n");
 		    	String clientRequest = reader.readLine();
 		    	if (clientRequest == null) {
 		    		break;
 		    	}
 
-		    	System.out.println("Processing request: " + clientRequest);
+		    	System.out.println("Processing request: " + clientRequest + "\n");
 		    	processRequest(clientRequest, writer);
-		    	System.out.println("Request processed.");
+		    	System.out.println("Request processed.\n");
 		    	
 		    }
 		    
@@ -276,6 +283,22 @@ public class SocketServer {
 					e.printStackTrace();
 					
 				}
+				
+			}
+			
+		});
+		
+		commandHandlers.put("exit", new CommandHandler() {
+
+			@Override
+			public ResponseType getResponseType() {
+				return ResponseType.EXIT;
+			}
+
+			@Override
+			public void handle(PrintWriter writer, String[] args) {
+				
+				writer.println("Thank you for using ctransfer! Goodbye.");
 				
 			}
 			
