@@ -1,5 +1,6 @@
 package com.ctransfer.application;
 
+import java.util.InputMismatchException;
 import java.util.Scanner;
 
 import com.ctransfer.client.SocketClient;
@@ -15,24 +16,20 @@ import com.ctransfer.server.SocketServer;
  */
 public class Application {
 	
+	private static final Integer DEFAULT_PORT = 9000;
+	
 	/**
-	 * Print function for simply printing a string to the standard 
-	 * output
+	 * Helper print function.
 	 * 
-	 * @param String to be printed
-	 * @return void
+	 * @param A string to print to system.out
 	 */
 	public static void print(String s) {
 		System.out.println(s);
 	}
 	
 	/**
-	 * Init function allows for user to select which program to
-	 * run. Waits for user to input a 1 for server and a 2 for
-	 * client. Opens a Server and client socket on port 9000.
-	 * 
-	 * @param None
-	 * @return void
+	 * Initialize a server or client depending on user input,
+	 * using a default port and localhost. 
 	 */
 	public static void init() {
 		
@@ -48,14 +45,20 @@ public class Application {
 		
 			Integer selection = sc.nextInt();
 			if (selection == 1) {
-				SocketServer server = new SocketServer(9000);	
+				SocketServer server = new SocketServer(DEFAULT_PORT);	
 				server.start();
 				
 			} else if (selection == 2) {
-				SocketClient client = new SocketClient("localhost", 9000);
+				SocketClient client = new SocketClient("localhost", DEFAULT_PORT);
 				client.start();
 				
+			} else {
+				System.err.println("Invalid selection. Exiting.");
+				
 			}
+			
+		} catch (InputMismatchException e) {
+			System.err.println("Invalid selection. Exiting.");
 			
 		} catch (Exception e) {
 			e.printStackTrace();
@@ -63,13 +66,7 @@ public class Application {
 		} 
 		
 	}
-
-	/**
-	 * Main execution point for the application
-	 * 
-	 * @param String[] arguments
-	 * @return void
-	 */
+	
 	public static void main(String[] args) {
 		
 		init();
