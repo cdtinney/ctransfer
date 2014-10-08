@@ -10,6 +10,14 @@ import java.util.ArrayList;
 import java.util.List;
 import java.util.logging.Logger;
 
+/**
+ * FileUtils contains a collection of functions for modifying files
+ * on the OS's file system.
+ *
+ * @author Ben Sweett & Colin Tinney
+ * @version 1.0
+ * @since 2014-09-29
+ */
 public class FileUtils {
 	
 	private static Logger LOGGER = Logger.getLogger(FileUtils.class.getName());
@@ -48,9 +56,16 @@ public class FileUtils {
         }
         
         return results;
-        
     }
-    
+     
+    /**
+     * Attempts to delete a file at a given directory with a 
+     * given name
+     * 
+     * @param String directory
+     * @param String fileName
+     * @return boolean
+     */
     public static boolean deleteFile(String directory, String fileName) {
     	
     	Boolean success = false;
@@ -73,9 +88,14 @@ public class FileUtils {
     	}
     	
     	return success;
-    	
     }
     
+    /**
+     * Attempts to create a directory at the given path
+     * 
+     * @param String path
+     * @return boolean
+     */
     public static boolean createDirectory(String path) {
 
     	boolean success = false;
@@ -97,11 +117,14 @@ public class FileUtils {
     	}
     	
     	return success;
-    	
     }
     
     /**
      * Returns true if a file ends with an extension contained in the specified list of extensions.
+     * 
+     * @param File file to check
+     * @param String[] extensions array
+     * @return boolean true if valid false if not
      */
     private static boolean validExtension(File file, String[] extensions) {
     	
@@ -117,7 +140,6 @@ public class FileUtils {
 		}
     	
     	return valid;
-    	
     }
 
 }

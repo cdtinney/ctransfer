@@ -21,7 +21,7 @@ import com.ctransfer.utils.OSUtils;
 /**
  * The SocketClient contains the main implementation of the client 
  * for the ctransfer application. Handles all aspects of the client
- * socket and communication with the server. As contains the map of 
+ * socket and communication with the server. Also contains the map of 
  * all accepted responses and handlers.  
  *
  * @author Ben Sweett & Colin Tinney
@@ -56,8 +56,7 @@ public class SocketClient {
 		responseHandlers = new HashMap<ResponseType, ResponseHandler>();
 		addResponseHandlers();
 		
-		setPwdByOS();
-		
+		setPwdByOS();	
 	}
 
 	/**
@@ -119,13 +118,13 @@ public class SocketClient {
 			}
 			
 		}
-		
 	}
 
 	/**
 	 * The stop function handles the clean up of networking 
 	 * resources on the client. It attempts to close the 
-	 * socket safely. 
+	 * socket safely.
+	 * 
 	 */
 	public void stop() {
 		
@@ -142,10 +141,8 @@ public class SocketClient {
 			System.exit(-1);
 	
 		}
-		
 	}
 	
-	/**
 	/**
 	 * The connect function will handle the initial connection
 	 * to the server. It creates a new socket and tries to 
@@ -162,8 +159,8 @@ public class SocketClient {
 		
 		try {
 			
-			// Connects to hostName:port, with a timeout of 1s
-			socket.connect(new InetSocketAddress(hostName, port), 1000);			
+			// Connects to hostName:port, with a timeout of 5s
+			socket.connect(new InetSocketAddress(hostName, port), 5000);			
 			
 			System.out.println("Connection established to: " + socket.getRemoteSocketAddress());
 			
@@ -179,16 +176,18 @@ public class SocketClient {
 		}
 		
 		return false;		
-		
 	}
 	
 	/**
 	 * The Process Response function checks to make sure the 
-	 * response from the server was no an error and 
+	 * response from the server was not an error and the handler
+	 * and response type exist. If everything is OK it calls the
+	 * handler for the response type. 
 	 * 
+	 * @param String response from server
+	 * @param BufferedReader input reader
 	 * @return boolean success or failure
 	 */
-
 	private boolean processResponse(String response, BufferedReader reader) throws Exception {
 	    
 	    if (response.contains(ResponseType.ERROR.toString())) {
@@ -210,9 +209,18 @@ public class SocketClient {
 	    
 	    responseHandler.handleResponse(reader);
 	    return true;
-		
 	}
 	
+	/**
+	 * Adds the accepted responses from the server to the map along
+	 * side their handler. Handlers from each response are also 
+	 * implemented here. Delete File prints out the server response 
+	 * from the request. File List prints the pwd, number of files/
+	 * folders, and all of their contents. File Transfer moves the
+	 * file named from the server to a byte array and then attempts
+	 * to write the data to a file. Exit terminates the program. 
+	 * 
+	 */
 	private void addResponseHandlers() {
 		
 		if (responseHandlers == null) {
@@ -267,7 +275,7 @@ public class SocketClient {
 				
 				Integer fileSize = Integer.parseInt(reader.readLine());
 				if (fileSize < 0) {
-					System.out.println("Invalid file size: " + fileSize);
+					System.err.println("Invalid file size: " + fileSize);
 					return;
 				}
 				
@@ -278,20 +286,27 @@ public class SocketClient {
 					return;
 				}
 				
-				// TODO - Handle errors here
 				File folder = new File(pwd);
 				if (!folder.exists() && !folder.mkdir()) {
-					System.out.println("Failed to create directory: " + pwd);
+					System.err.println("Failed to create directory: " + pwd);
 					return;
 				}
 				
-				File file = new File(pwd + fileName);
-				file.createNewFile();
-				
-		        FileOutputStream fileOutputStream = new FileOutputStream(file);
-		        fileOutputStream.write(data);
-		        fileOutputStream.close();		
-		        
+				try {
+					
+					File file = new File(pwd + fileName);
+					file.createNewFile();
+					
+					FileOutputStream fileOutputStream = new FileOutputStream(file);
+			        fileOutputStream.write(data);
+			        fileOutputStream.close();
+			        
+				} catch (SecurityException | IOException e) {
+					System.err.println(e.getLocalizedMessage());
+					System.err.println("Failed to create file: " + fileName + " at pathname: " + pwd);
+					return;
+				}
+		        		
 		        System.out.println("File successfully transferred.");
 			}
 			
@@ -304,19 +319,28 @@ public class SocketClient {
 				
 				String response = reader.readLine();
 				System.out.println(response + "\n");
-				
-				stop();
 				System.exit(0);
-				
 			}
 		});
-		
 	}
 	
+	/**
+	 * Checks the response for the ERROR type and if it ends 
+	 * with a '.'.
+	 * 
+	 * @param String response from server
+	 * @return boolean true if error otherwise false
+	 */
 	private boolean checkForErrors(String response) {
-		return response.contains(ResponseType.ERROR.toString());
+		return response.contains(ResponseType.ERROR.toString()) && !response.endsWith(".");
 	}
 	
+	/**
+	 * Gets the users input from the console.
+	 * 
+	 * @param Scanner the input scanner
+	 * @return String users input
+	 */
 	private String getUserInput(Scanner sc) {
 		
 		if (sc == null) {
@@ -325,9 +349,14 @@ public class SocketClient {
 
 	    System.out.print("\nctransfer > ");
 	    return sc.nextLine();
-		
 	}
 	
+	/**
+	 * Gets the users input for the hostname and port number
+	 * If nothing is entered it uses the default for both.
+	 * 
+	 * @param Scanner the input scanner
+	 */
 	private void getHostnameAndPort(Scanner sc) {
 
 		System.out.print("\nPlease enter a hostname: ");
@@ -342,9 +371,13 @@ public class SocketClient {
 		if (hostName != null && !hostName.trim().isEmpty()) {
 			this.hostName = hostName;
 		}
-		
 	}
 	
+	/**
+	 * Sets the PWD based on the OS variant. Checks to make
+	 * sure the directory exists. 
+	 * 
+	 */
 	private void setPwdByOS() {
 		
 		String home = System.getProperty("user.home");
@@ -359,7 +392,7 @@ public class SocketClient {
 		
 		boolean exists = FileUtils.createDirectory(pwd);
 		if (!exists) {
-			System.out.println("Failed to create PWD: " + pwd);
+			System.err.println("Failed to create PWD: " + pwd);
 		}
 	
 	}

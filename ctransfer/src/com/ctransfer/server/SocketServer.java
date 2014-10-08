@@ -14,14 +14,22 @@ import java.util.Arrays;
 import java.util.HashMap;
 import java.util.List;
 
-import com.ctransfer.application.Application;
 import com.ctransfer.enums.ResponseType;
 import com.ctransfer.utils.ArrayUtils;
 import com.ctransfer.utils.FileUtils;
 import com.ctransfer.utils.OSUtils;
 import com.google.common.io.Files;
 
-// TODO - Comments
+/**
+ * The SocketServer contains the main implementation of the server 
+ * for the ctransfer application. Handles all aspects of the server
+ * socket and communication with the client. Also contains the map of 
+ * all accepted commands and handlers.  
+ *
+ * @author Ben Sweett & Colin Tinney
+ * @version 1.0
+ * @since 2014-09-29
+ */
 public class SocketServer {
 	
 	private final Integer port;
@@ -33,6 +41,13 @@ public class SocketServer {
 
 	private String pwd = "";
 	
+	/**
+	 * Constructor for the SocketServer. Sets the port, collects
+	 * all of the supported command types and their handlers, and 
+	 * sets the present working directory. 
+	 * 
+	 * @param Integer port
+	 */
 	public SocketServer(Integer port) {
 		this.port = port;
 		
@@ -40,9 +55,15 @@ public class SocketServer {
 		addCommands();
 		
 		setPwdByOS();
-		
 	}
 
+	/**
+	 * Attempts to create a serverSocket on the default port provided.
+	 * Waits for a client to connect. Once connected with a client it 
+	 * listens for commands. 
+	 * 
+	 * @throws Exception
+	 */
 	public void start() {
 		
 		try {
@@ -63,7 +84,7 @@ public class SocketServer {
 		} catch (Exception e) {
 			if(e instanceof BindException) {
 				System.err.println("A Server is already running at this address.");
-				Application.init();
+				System.exit(-1);
 			}
 				
 			e.printStackTrace();
@@ -72,6 +93,12 @@ public class SocketServer {
 		
 	}
 
+	/**
+	 * The stop function handles the clean up of networking 
+	 * resources on the server. It attempts to close both 
+	 * sockets safely.
+	 * 
+	 */
 	public void stop() {
 		
 		try {
@@ -84,15 +111,22 @@ public class SocketServer {
 				serverSocket.close();
 			}
 			
-			System.out.println("Socket closed.");
+			System.out.println("Sockets closed.");
 		
 		} catch (Exception e) {
 			e.printStackTrace();
 			
 		}
-		
 	}
 	
+	/**
+	 * Sets up the input and output streams from the client socket.
+	 * Listens for commands from the client. If a command is found
+	 * it reads it from the buffer and processes it. If an exception
+	 * is thrown it closes the streams and calls stop.
+	 * 
+	 * @throws Exception
+	 */
 	public void listen() throws Exception {
 		
 		BufferedReader reader = null;
@@ -118,7 +152,7 @@ public class SocketServer {
 		    }
 		    
 		} catch (SocketException e) {
-			System.out.println("SocketException: the connection has most likely been closed.");
+			System.err.println("SocketException: the connection has most likely been closed.");
 			
 		} catch (Exception e) {
 			e.printStackTrace();
@@ -139,9 +173,18 @@ public class SocketServer {
 			stop();
 			
 		}
-		
 	}
 	
+	/**
+	 * The Process Response function checks to make sure the 
+	 * command from the client can be processed by the server.
+	 * If not valid it returns an error otherwise it sends the 
+	 * response type and attempts to process the command with 
+	 * its handler and arguments. 
+	 * 
+	 * @param String request from client
+	 * @param PrinterWriter output writer
+	 */
 	private void processRequest(String request, PrintWriter writer) {
 		
 		// Trim leading/trailing white space
@@ -171,6 +214,18 @@ public class SocketServer {
 		
 	}
 	
+	/**
+	 * Adds the accepted commands from the client to the map along
+	 * side their handler. Handlers from each command are also 
+	 * implemented here. ls gets the file and folder names from the
+	 * server pwd and sends them to the client. delete tries to remove
+	 * the file given as an argument with the command and tells the client
+	 * if it was removed properly. get tries to read the file given as an
+	 * argument into the server and then write it out to the client along with
+	 * its size and name. the exit command sends a goodbye message to the 
+	 * client.
+	 * 
+	 */
 	private void addCommands() {
 		
 		if (commandHandlers == null) {
@@ -235,7 +290,12 @@ public class SocketServer {
 
 			@Override
 			public void handle(PrintWriter writer, String[] args) {
-
+				
+				if (args.length < 1) {
+					writer.println(ResponseType.ERROR + " - No file named specified.");
+					return;
+				}
+				
 				String fileName = args[0];
 				Boolean result = FileUtils.deleteFile(pwd, fileName);
 				
@@ -280,8 +340,8 @@ public class SocketServer {
 					clientSocket.getOutputStream().write(data);				
 					
 				} catch (IOException e) {
-					e.printStackTrace();
-					
+					System.err.println(e.getLocalizedMessage());
+					System.err.println("Failed to read file or write data to client.");
 				}
 				
 			}
@@ -306,6 +366,11 @@ public class SocketServer {
 		
 	}
 	
+	/**
+	 * Sets the PWD based on the OS variant. Checks to make
+	 * sure the directory exists. 
+	 * 
+	 */
 	private void setPwdByOS() {
 		
 		String home = System.getProperty("user.home");
