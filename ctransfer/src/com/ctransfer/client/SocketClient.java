@@ -292,6 +292,8 @@ public class SocketClient {
 					return;
 				}
 				
+				System.out.println("Warning: If the file exists it will be overwritten.");
+				
 				try {
 					
 					File file = new File(pwd + fileName);
@@ -332,7 +334,7 @@ public class SocketClient {
 	 * @return boolean true if error otherwise false
 	 */
 	private boolean checkForErrors(String response) {
-		return response.contains(ResponseType.ERROR.toString()) && !response.endsWith(".");
+		return response.contains(ResponseType.ERROR.toString()) && response.endsWith(".");
 	}
 	
 	/**
