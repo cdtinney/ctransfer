@@ -13,7 +13,6 @@ import java.net.SocketTimeoutException;
 import java.util.HashMap;
 import java.util.Scanner;
 
-import com.ctransfer.application.Application;
 import com.ctransfer.enums.ResponseType;
 import com.ctransfer.utils.EnumUtils;
 import com.ctransfer.utils.FileUtils;
@@ -45,7 +44,8 @@ public class SocketClient {
 	 * all of the supported response types and their handlers, and 
 	 * sets the present working directory. 
 	 * 
-	 * @param String host name and Integer port
+	 * @param String host name
+	 * @param Integer port
 	 */
 	public SocketClient(String hostName, Integer port) {
 		this.hostName = hostName;
@@ -67,8 +67,6 @@ public class SocketClient {
 	 * the function for processing commands. 
 	 * 
 	 * @throws Exception
-	 * @param None
-	 * @return void
 	 */
 	public void start() throws Exception {
 		
@@ -108,7 +106,7 @@ public class SocketClient {
 			
 		} catch (SocketException e) {
 			System.err.println("SocketException: The connection has most likely been closed.");
-			Application.init();
+			System.exit(-1);
 			
 		} catch (Exception e) {
 			e.printStackTrace();
@@ -129,8 +127,6 @@ public class SocketClient {
 	 * resources on the client. It attempts to close the 
 	 * socket safely. 
 	 * 
-	 * @param None
-	 * @return void
 	 */
 	public void stop() {
 		
@@ -156,7 +152,6 @@ public class SocketClient {
 	 * connect to the host name and address name given by the 
 	 * user. 
 	 * 
-	 * @param None
 	 * @return boolean success or failure
 	 */
 	private boolean connect() {
@@ -189,9 +184,13 @@ public class SocketClient {
 	
 	/**
 	 * The Process Response function checks to make sure the 
-	 * response from the server was no an error and 
+	 * response from the server was not an error. If its an error
+	 * it displays it for the user. If the response or handler is
+	 * missing then it notifies the user. Otherwise it calls the 
+	 * corresponding handler for the response.
 	 * 
-	 * @param None
+	 * @param String response from server 
+	 * @param BufferedReader input reader
 	 * @return boolean success or failure
 	 */
 	private boolean processResponse(String response, BufferedReader reader) throws Exception {
