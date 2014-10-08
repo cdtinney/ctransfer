@@ -19,20 +19,17 @@ public class Application {
 	private static final Integer DEFAULT_PORT = 9000;
 	
 	/**
-	 * Print function for simply printing a string to the standard 
-	 * output
+	 * Helper print function.
 	 * 
-	 * @param String to be printed
+	 * @param A string to print to system.out
 	 */
 	public static void print(String s) {
 		System.out.println(s);
 	}
 	
 	/**
-	 * Init function allows for user to select which program to
-	 * run. Waits for user to input a 1 for server and a 2 for
-	 * client. Opens a Server and client socket on port 9000.
-	 * 
+	 * Initialize a server or client depending on user input,
+	 * using a default port and localhost. 
 	 */
 	public static void init() {
 		
@@ -69,12 +66,7 @@ public class Application {
 		} 
 		
 	}
-
-	/**
-	 * Main execution point for the application
-	 * 
-	 * @param String[] arguments
-	 */
+	
 	public static void main(String[] args) {
 		
 		init();
