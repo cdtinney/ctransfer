@@ -1,5 +1,6 @@
 package com.ctransfer.application;
 
+import java.util.InputMismatchException;
 import java.util.Scanner;
 
 import com.ctransfer.client.SocketClient;
@@ -14,6 +15,8 @@ import com.ctransfer.server.SocketServer;
  * @since 2014-09-29
  */
 public class Application {
+	
+	private static final Integer DEFAULT_PORT = 9000;
 	
 	/**
 	 * Print function for simply printing a string to the standard 
@@ -48,14 +51,20 @@ public class Application {
 		
 			Integer selection = sc.nextInt();
 			if (selection == 1) {
-				SocketServer server = new SocketServer(9000);	
+				SocketServer server = new SocketServer(DEFAULT_PORT);	
 				server.start();
 				
 			} else if (selection == 2) {
-				SocketClient client = new SocketClient("localhost", 9000);
+				SocketClient client = new SocketClient("localhost", DEFAULT_PORT);
 				client.start();
 				
+			} else {
+				System.err.println("Invalid selection. Exiting.");
+				
 			}
+			
+		} catch (InputMismatchException e) {
+			System.err.println("Invalid selection. Exiting.");
 			
 		} catch (Exception e) {
 			e.printStackTrace();

@@ -283,7 +283,6 @@ public class SocketClient {
 					return;
 				}
 				
-				// TODO - Handle errors here
 				File folder = new File(pwd);
 				if (!folder.exists() && !folder.mkdir()) {
 					System.out.println("Failed to create directory: " + pwd);
@@ -310,7 +309,6 @@ public class SocketClient {
 				String response = reader.readLine();
 				System.out.println(response + "\n");
 				
-				stop();
 				System.exit(0);
 				
 			}
