@@ -23,7 +23,6 @@ public class Application {
 	 * output
 	 * 
 	 * @param String to be printed
-	 * @return void
 	 */
 	public static void print(String s) {
 		System.out.println(s);
@@ -34,8 +33,6 @@ public class Application {
 	 * run. Waits for user to input a 1 for server and a 2 for
 	 * client. Opens a Server and client socket on port 9000.
 	 * 
-	 * @param None
-	 * @return void
 	 */
 	public static void init() {
 		
@@ -77,7 +74,6 @@ public class Application {
 	 * Main execution point for the application
 	 * 
 	 * @param String[] arguments
-	 * @return void
 	 */
 	public static void main(String[] args) {
 		

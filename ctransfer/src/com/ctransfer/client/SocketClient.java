@@ -67,8 +67,6 @@ public class SocketClient {
 	 * the function for processing commands. 
 	 * 
 	 * @throws Exception
-	 * @param None
-	 * @return void
 	 */
 	public void start() throws Exception {
 		
@@ -128,9 +126,6 @@ public class SocketClient {
 	 * The stop function handles the clean up of networking 
 	 * resources on the client. It attempts to close the 
 	 * socket safely. 
-	 * 
-	 * @param None
-	 * @return void
 	 */
 	public void stop() {
 		
@@ -156,7 +151,6 @@ public class SocketClient {
 	 * connect to the host name and address name given by the 
 	 * user. 
 	 * 
-	 * @param None
 	 * @return boolean success or failure
 	 */
 	private boolean connect() {
@@ -191,7 +185,6 @@ public class SocketClient {
 	 * The Process Response function checks to make sure the 
 	 * response from the server was no an error and 
 	 * 
-	 * @param None
 	 * @return boolean success or failure
 	 */
 	private boolean processResponse(String response, BufferedReader reader) throws Exception {
